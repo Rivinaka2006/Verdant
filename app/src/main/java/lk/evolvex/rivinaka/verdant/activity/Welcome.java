@@ -34,7 +34,7 @@ public class Welcome extends AppCompatActivity {
         });
 
         // 4. Video Logic
-        // Ensure "plant_rotation.mp4" exists in the "res/raw" folder
+        // Ensure "plant_orbit.mp4" exists in the "res/raw" folder
         String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.plant_orbit;
         Uri uri = Uri.parse(videoPath);
         videoView.setVideoURI(uri);
