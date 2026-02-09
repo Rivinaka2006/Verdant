@@ -13,7 +13,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="44dp"
         android:rotation="180"
         android:src="@drawable/arrow"
         app:layout_constraintStart_toStartOf="parent"
@@ -67,7 +67,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:padding="24dp"
-                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:src="@drawable/person_icon"
                     app:tint="#555555" />
             </androidx.cardview.widget.CardView>
 

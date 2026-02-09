@@ -14,5 +14,6 @@
     <color name="grey_text">#9E9E9E</color>
     <color name="divider_color">#333333</color>
     <color name="avatar_placeholder">#35383F</color>
+    <color name="button_grey">#35383F</color>
 </resources>
 

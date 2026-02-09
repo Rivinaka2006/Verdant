@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Verdant">
         <activity
+            android:name=".activity.OtpVerify"
+            android:exported="false" />
+        <activity
+            android:name=".activity.SetFingerPrint"
+            android:exported="false" />
+        <activity
             android:name=".activity.FillProfile"
             android:exported="false" />
         <activity
