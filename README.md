@@ -1,2 +1,12 @@
 # Verdant
-Verdant is a mobile commerce application that enables users to easily and efficiently purchase their preferred plants in one centralized platform.
+Verdant is a premium M-Commerce (Mobile Commerce) application built for the Android platform, designed to revolutionize the way customers purchase decorative plants. It serves as a centralized digital marketplace that bridges the gap between professional nurseries and urban plant buyers, eliminating the need to physically visit multiple stores, deal with uncertain stock availability, non-transparent pricing, or the difficulty of transporting plants safely.
+
+The app delivers a seamless end-to-end shopping experience - from discovery to doorstep delivery - by leveraging the full suite of Android capabilities. It features a modern, visually rich UI with a dark-mode aesthetic that makes plant imagery stand out, complemented by smooth animations and shared element transitions that provide a premium, polished feel throughout the user journey.
+
+At its core, Verdant offers smart search and advanced category filters for effortless plant discovery, high-resolution image galleries and video previews for virtual plant inspection, and a shopping cart with wishlist functionality powered by local storage (Room/SQLite) for both online and offline usability. Google Maps and Directions API integration enables users to locate nearby nurseries and track their deliveries in real time, while telephony integration allows instant click-to-call communication with nursery experts or delivery support.
+
+Security is a top priority - the app incorporates biometric/fingerprint authentication at checkout alongside encrypted payment gateways to ensure safe and trustworthy transactions. Users stay informed at every stage through push notifications via Firebase Cloud Messaging (FCM) and broadcast receivers that handle network changes and deliver real-time order updates. Background services ensure multitasking capabilities, allowing payment processing and data synchronization to run seamlessly without disrupting the shopping experience.
+
+The user journey is carefully crafted: from an immersive onboarding experience using ViewPager2 slides, through secure login with biometric setup, to visual catalog exploration, nursery verification via maps and telephony, secure biometric checkout, and finally live delivery tracking - every touchpoint is designed for trust, convenience, and engagement.
+
+In essence, Verdant is not just a plant shopping app - it is a comprehensive, secure, and technically robust digital ecosystem that combines elegant design, advanced hardware integration, and intelligent connectivity to make purchasing decorative plants effortless, transparent, and enjoyable for every user.
