@@ -8,12 +8,17 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black_background">#000000</color>
-    <color name="app_green">#185F1A</color>
+    <color name="app_green">#00894D</color>
     <color name="light_grey">#B0B0B0</color>
     <color name="input_field_bg">#1F222A</color>
     <color name="grey_text">#9E9E9E</color>
     <color name="divider_color">#333333</color>
     <color name="avatar_placeholder">#35383F</color>
     <color name="button_grey">#35383F</color>
+    <color name="app_background">#181A20</color> <!-- Dark Grey/Black -->
+    <color name="app_surface">#1F222A</color>     <!-- Lighter Grey for Cards -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#BDBDBD</color>
+    <color name="text_hint">#757575</color>
 </resources>
 

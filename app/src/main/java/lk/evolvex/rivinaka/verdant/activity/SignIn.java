@@ -14,6 +14,7 @@ import lk.evolvex.rivinaka.verdant.R;
 public class SignIn extends AppCompatActivity {
 
     private TextView moveSignUp;
+    private TextView tvForgot;
 
 
     @Override
@@ -21,11 +22,17 @@ public class SignIn extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
         moveSignUp = findViewById(R.id.tvSignUp);
+        tvForgot = findViewById(R.id.tvForgot);
 
         moveSignUp.setOnClickListener(v -> {
             Intent intent = new Intent(SignIn.this, SignUp.class);
             startActivity(intent);
             finish();
+        });
+
+        tvForgot.setOnClickListener(v -> {
+            Intent intent = new Intent(SignIn.this, ForgotPasswordActivity.class);
+            startActivity(intent);
         });
 
     }
