@@ -37,7 +37,7 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
     protected void onCreate(Bundle savedInstanceState) {
         EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_home);
+        setContentView(R.layout.activity_nav_main);
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
@@ -67,10 +67,25 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
         }
     }
 
+    public void setHeaderVisibility(int visibility) {
+        if (headerContainer != null) {
+            headerContainer.setVisibility(visibility);
+        }
+    }
+
+    public void setBottomNavVisibility(int visibility) {
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setVisibility(visibility);
+        }
+    }
+
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
+        } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+            // Optional: You might want to re-evaluate visibility here depending on fragment
         } else {
             super.onBackPressed();
         }
@@ -78,20 +93,49 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Fragment fragment = null;
         int itemId = item.getItemId();
-        if (itemId == R.id.nav_home || itemId == R.id.nav_drawer_home) {
+
+        // 1. Sync: If a side drawer item is clicked, update the Bottom Navigation selection.
+        if (itemId == R.id.nav_drawer_home) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_home);
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        } else if (itemId == R.id.nav_drawer_cart) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_cart);
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        } else if (itemId == R.id.nav_drawer_orders) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_orders);
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        } else if (itemId == R.id.nav_drawer_profile) {
+            bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+
+        // 2. Handle selection logic for Bottom Navigation items
+        Fragment fragment = null;
+        if (itemId == R.id.nav_home) {
             fragment = new HomeFragment();
             headerContainer.setVisibility(View.VISIBLE);
-        } else if (itemId == R.id.nav_cart || itemId == R.id.nav_drawer_cart) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            navigationView.setCheckedItem(R.id.nav_drawer_home);
+        } else if (itemId == R.id.nav_cart) {
             fragment = new CartFragment();
             headerContainer.setVisibility(View.GONE);
-        } else if (itemId == R.id.nav_orders || itemId == R.id.nav_drawer_orders) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            navigationView.setCheckedItem(R.id.nav_drawer_cart);
+        } else if (itemId == R.id.nav_orders) {
             fragment = new OrdersFragment();
             headerContainer.setVisibility(View.GONE);
-        } else if (itemId == R.id.nav_profile || itemId == R.id.nav_drawer_profile) {
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            navigationView.setCheckedItem(R.id.nav_drawer_orders);
+        } else if (itemId == R.id.nav_profile) {
             fragment = new ProfileFragment();
             headerContainer.setVisibility(View.GONE);
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            navigationView.setCheckedItem(R.id.nav_drawer_profile);
         }
 
         if (fragment != null) {
@@ -103,6 +147,8 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
     }
 
     private void loadFragment(Fragment fragment) {
+        // Clear backstack when switching main tabs
+        getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }

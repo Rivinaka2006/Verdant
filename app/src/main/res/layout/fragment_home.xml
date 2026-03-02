@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp">
 
-            <!-- [NEW] PROMO BANNER -->
+            <!-- PROMO BANNER -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cvPromo"
                 android:layout_width="match_parent"
@@ -95,9 +95,9 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvSectionOffers" />
 
-            <!-- HORIZONTAL SCROLL: Plants -->
+            <!-- HORIZONTAL SCROLLVIEW for Special Offers -->
             <HorizontalScrollView
-                android:id="@+id/svPlants"
+                android:id="@+id/svSpecialOffers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -112,6 +112,7 @@
 
                     <!-- PLANT ITEM 1 -->
                     <LinearLayout
+                        android:id="@+id/specialOfferItem1"
                         android:layout_width="170dp"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="16dp"
@@ -181,20 +182,36 @@
                                 android:textSize="10sp" />
                         </LinearLayout>
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="$29"
-                            android:textColor="@color/app_green"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="$29"
+                                android:textColor="@color/app_green"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="$42"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="14sp"
+                                android:alpha="0.6" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <!-- PLANT ITEM 2 -->
                     <LinearLayout
                         android:layout_width="170dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
                         android:orientation="vertical">
 
                         <androidx.cardview.widget.CardView
@@ -261,14 +278,124 @@
                                 android:textSize="10sp" />
                         </LinearLayout>
 
-                        <TextView
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:text="$25"
-                            android:textColor="@color/app_green"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="$25"
+                                android:textColor="@color/app_green"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="$35"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="14sp"
+                                android:alpha="0.6" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- PLANT ITEM 3 -->
+                    <LinearLayout
+                        android:layout_width="170dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            app:cardBackgroundColor="@color/app_surface"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="end|top"
+                                android:layout_margin="12dp"
+                                android:src="@android:drawable/star_off"
+                                app:tint="@color/app_green" />
+
+                            <ImageView
+                                android:layout_width="120dp"
+                                android:layout_height="120dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/sample_plant" />
+                        </androidx.cardview.widget.CardView>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Snake Plant"
+                            android:textColor="@color/text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:src="@android:drawable/btn_star_big_on"
+                                app:tint="@color/app_green" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="4dp"
+                                android:text="4.9"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_sold_tag"
+                                android:paddingHorizontal="6dp"
+                                android:paddingVertical="2dp"
+                                android:text="Sold 5k"
+                                android:textColor="@color/app_green"
+                                android:textSize="10sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="$18"
+                                android:textColor="@color/app_green"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="$28"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="14sp"
+                                android:alpha="0.6" />
+                        </LinearLayout>
                     </LinearLayout>
 
                 </LinearLayout>
@@ -285,7 +412,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/svPlants" />
+                app:layout_constraintTop_toBottomOf="@id/svSpecialOffers" />
 
             <TextView
                 android:layout_width="wrap_content"

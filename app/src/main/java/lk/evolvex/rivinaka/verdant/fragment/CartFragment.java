@@ -1,9 +1,11 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lk.evolvex.rivinaka.verdant.R;
+import lk.evolvex.rivinaka.verdant.activity.CheckoutActivity;
 import lk.evolvex.rivinaka.verdant.adapter.CartAdapter;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
 
@@ -28,6 +31,8 @@ public class CartFragment extends Fragment {
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems;
     private final double SHIPPING_FEE = 100.00;
+    private Button btnCheckout;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -44,6 +49,16 @@ public class CartFragment extends Fragment {
         tvSubtotal = view.findViewById(R.id.tvSubtotal);
         tvShippingFee = view.findViewById(R.id.tvShippingFee);
         tvTotal = view.findViewById(R.id.tvTotal);
+        btnCheckout = view.findViewById(R.id.btnCheckout);
+
+        btnCheckout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), CheckoutActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
         cartItems = new ArrayList<>();
         // Add sample data
