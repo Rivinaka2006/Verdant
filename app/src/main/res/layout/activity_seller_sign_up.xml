@@ -8,7 +8,6 @@
     android:layout_height="match_parent"
     android:background="@color/black_background">
 
-    <!-- Wrapped in ScrollView to handle the increased height of the form -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -25,15 +24,15 @@
                 android:id="@+id/layoutLogo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="20dp"
                 android:gravity="center_vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
-                    android:layout_width="200dp"
-                    android:layout_height="120dp"
+                    android:layout_width="160dp"
+                    android:layout_height="100dp"
                     android:src="@drawable/verdant_logo"
                     android:scaleType="fitCenter"/>
             </LinearLayout>
@@ -42,23 +41,35 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="Create Your Account"
+                android:layout_marginTop="16dp"
+                android:text="Seller Registration"
                 android:textColor="@color/white"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/layoutLogo" />
 
-            <!-- 2. Full Name Field -->
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Grow your business with Verdant"
+                android:textColor="@color/grey_text"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+            <!-- 2. Store Name Field -->
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilFullName"
+                android:id="@+id/tilStoreName"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:hint="Full Name"
+                android:hint="Store Name"
                 android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
@@ -68,7 +79,7 @@
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
                 app:hintTextColor="@color/grey_text"
-                app:layout_constraintTop_toBottomOf="@+id/tvTitle">
+                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -76,21 +87,21 @@
                     android:drawableStart="@drawable/ic_person"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
-                    android:inputType="textPersonName"
+                    android:inputType="textCapWords"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 3. Email Field -->
+            <!-- 3. Business Email -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilEmail"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Email"
+                android:hint="Business Email"
                 android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
@@ -100,7 +111,7 @@
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
                 app:hintTextColor="@color/grey_text"
-                app:layout_constraintTop_toBottomOf="@+id/tilFullName">
+                app:layout_constraintTop_toBottomOf="@+id/tilStoreName">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -115,7 +126,7 @@
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 4. Phone Number Field -->
+            <!-- 4. Phone Number -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPhone"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
@@ -147,7 +158,39 @@
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 5. Password Field -->
+            <!-- 5. Store Address -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilAddress"
+                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Store Address"
+                android:textColorHint="@color/grey_text"
+                app:boxBackgroundColor="@color/input_field_bg"
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:boxCornerRadiusBottomStart="16dp"
+                app:boxCornerRadiusTopEnd="16dp"
+                app:boxCornerRadiusTopStart="16dp"
+                app:boxStrokeWidth="0dp"
+                app:boxStrokeWidthFocused="0dp"
+                app:hintTextColor="@color/grey_text"
+                app:layout_constraintTop_toBottomOf="@+id/tilPhone">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@android:drawable/ic_dialog_map"
+                    android:drawablePadding="12dp"
+                    android:drawableTint="@color/grey_text"
+                    android:inputType="textPostalAddress"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="16dp"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- 6. Password -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPassword"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
@@ -166,7 +209,7 @@
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/grey_text"
                 app:hintTextColor="@color/grey_text"
-                app:layout_constraintTop_toBottomOf="@+id/tilPhone">
+                app:layout_constraintTop_toBottomOf="@+id/tilAddress">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -181,7 +224,7 @@
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 6. Confirm Password Field -->
+            <!-- 7. Confirm Password -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilConfirmPassword"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
@@ -215,25 +258,25 @@
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 7. Terms & Conditions Checkbox -->
+            <!-- 8. Terms Checkbox -->
             <CheckBox
                 android:id="@+id/cbTerms"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="I agree to the Terms &amp; Conditions"
+                android:text="I agree to the Seller Terms &amp; Policies"
                 android:textColor="@color/white"
                 android:buttonTint="@color/app_green"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tilConfirmPassword" />
 
-            <!-- 8. Sign Up Button -->
+            <!-- 9. Register Button -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSignUp"
+                android:id="@+id/btnRegister"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                android:text="Sign up"
+                android:text="Register as Seller"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="16sp"
@@ -244,117 +287,22 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cbTerms" />
 
-            <!-- 9. Divider -->
-            <LinearLayout
-                android:id="@+id/layoutDivider"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                app:layout_constraintTop_toBottomOf="@+id/btnSignUp">
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_weight="1"
-                    android:background="@color/divider_color" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:text="or continue with"
-                    android:textColor="@color/white" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_weight="1"
-                    android:background="@color/divider_color" />
-            </LinearLayout>
-
-            <!-- 10. Social Buttons -->
-            <LinearLayout
-                android:id="@+id/layoutSocial"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutDivider">
-
-                <!-- Facebook -->
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_social_btn"
-                    android:padding="12dp"
-                    android:src="@drawable/facebook" />
-
-                <!-- Google -->
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_social_btn"
-                    android:padding="12dp"
-                    android:src="@drawable/google" />
-
-                <!-- Apple -->
-                <ImageView
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_social_btn"
-                    android:padding="12dp"
-                    android:src="@drawable/apple"
-                    app:tint="@color/white" />
-            </LinearLayout>
-
-            <!-- 11. Seller Option -->
-            <LinearLayout
-                android:id="@+id/layoutSellerOption"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutSocial">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Want to grow with us? "
-                    android:textColor="@color/grey_text" />
-
-                <TextView
-                    android:id="@+id/tvSellerRegister"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Register as a Seller"
-                    android:textColor="@color/app_green"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <!-- 12. Footer -->
+            <!-- 10. Footer -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="24dp"
                 android:orientation="horizontal"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/layoutSellerOption">
+                app:layout_constraintTop_toBottomOf="@+id/btnRegister">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Already have an account? "
+                    android:text="Already a seller? "
                     android:textColor="@color/grey_text" />
 
                 <TextView

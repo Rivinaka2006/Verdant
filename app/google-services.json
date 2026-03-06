@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "742645884353",
+    "project_id": "verdant-bbf83",
+    "storage_bucket": "verdant-bbf83.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742645884353:android:90b758e05f8250c7c47b40",
+        "android_client_info": {
+          "package_name": "lk.evolvex.rivinaka.verdant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_ZeddS8wDKoQebB6RmS00Ru7UleUmp0g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

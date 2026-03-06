@@ -60,12 +60,12 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
-
         if (savedInstanceState == null) {
             loadFragment(new HomeFragment());
             navigationView.setCheckedItem(R.id.nav_drawer_home);
         }
     }
+
 
     public void setHeaderVisibility(int visibility) {
         if (headerContainer != null) {

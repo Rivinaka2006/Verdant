@@ -9,9 +9,14 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.viewpager2.widget.ViewPager2;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
+import lk.evolvex.rivinaka.verdant.adapter.ImageSliderAdapter;
 
 public class singleProductFragment extends Fragment {
 
@@ -44,11 +49,23 @@ public class singleProductFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     // Navigate back to the previous fragment (Home)
-                    if (getFragmentManager() != null) {
-                        getFragmentManager().popBackStack();
+                    if (getParentFragmentManager() != null) {
+                        getParentFragmentManager().popBackStack();
                     }
                 }
             });
+        }
+
+        // Setup ViewPager2 for product images
+        ViewPager2 viewPager = view.findViewById(R.id.viewPager_product_media);
+        if (viewPager != null) {
+            List<Integer> images = new ArrayList<>();
+            images.add(R.drawable.plant);
+            images.add(R.drawable.sample_plant);
+            images.add(R.drawable.plant); // Adding a few duplicates as placeholders
+
+            ImageSliderAdapter adapter = new ImageSliderAdapter(images);
+            viewPager.setAdapter(adapter);
         }
     }
 
@@ -58,11 +75,7 @@ public class singleProductFragment extends Fragment {
         // Restore visibility when leaving the fragment
         if (getActivity() instanceof MainHome) {
             MainHome mainHome = (MainHome) getActivity();
-            // Note: We'll need to check which fragment we're returning to 
-            // but for now, we'll let MainHome's navigation logic handle it 
-            // or restore defaults here.
             mainHome.setBottomNavVisibility(View.VISIBLE);
-            // Header visibility is usually managed by the navigation selection in MainHome
         }
     }
 }

@@ -59,20 +59,22 @@
             android:layout_height="wrap_content"
             android:paddingBottom="24dp">
 
-            <!-- Product Image -->
-            <ImageView
-                android:id="@+id/iv_product"
+            <!-- Product Media Carousel Container -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/media_container"
                 android:layout_width="0dp"
                 android:layout_height="372dp"
-                android:layout_marginTop="24dp"
-                android:contentDescription="Image of oranges"
-                android:scaleType="fitCenter"
-                android:src="@drawable/plant"
-                app:layout_constraintDimensionRatio="H,4:3"
+                android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintWidth_percent="0.95" />
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager_product_media"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Product Details Card -->
             <androidx.cardview.widget.CardView
@@ -86,7 +88,7 @@
                 app:cardElevation="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/iv_product">
+                app:layout_constraintTop_toBottomOf="@id/media_container">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -207,6 +209,68 @@
                         android:text="Enjoy farm-fresh produce, handpicked for quality, packed with nutrition, and delivered With care! and well delivered fast See more.."
                         android:textColor="@color/white"
                         android:textSize="14sp" />
+
+                    <!-- Care Instructions -->
+                    <TextView
+                        android:id="@+id/tv_care_instructions_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="Care Instructions"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_care_instructions_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingExtra="4dp"
+                        android:text="Place in a bright, indirect light location. Wipe leaves with a damp cloth to keep them clean and healthy."
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <!-- Watering Frequency -->
+                    <TextView
+                        android:id="@+id/tv_watering_frequency_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="Watering Frequency"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_watering_frequency_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Once a week or when the top inch of soil feels dry."
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <!-- Light Requirement -->
+                    <TextView
+                        android:id="@+id/tv_light_requirement_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="Light Requirement"
+                        android:textColor="@color/white"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_light_requirement_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Moderate to bright indirect sunlight."
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -215,7 +279,7 @@
                 android:id="@+id/tv_similar_header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="36dp"
                 android:layout_marginTop="24dp"
                 android:text="Similar Items"
                 android:textColor="@color/white"
@@ -231,7 +295,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:clipToPadding="false"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="36dp"
                 android:scrollbars="none"
                 app:layout_constraintTop_toBottomOf="@id/tv_similar_header">
 

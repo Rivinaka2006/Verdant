@@ -12,6 +12,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Verdant">
         <activity
+            android:name=".activity.SellerOrderDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.AddEditProductActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SellerMainHome"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SellerSignUp"
+            android:exported="false" />
+        <activity
             android:name=".activity.CheckoutActivity"
             android:exported="false"
             android:screenOrientation="portrait" />

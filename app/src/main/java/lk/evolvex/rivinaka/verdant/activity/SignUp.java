@@ -12,6 +12,7 @@ import lk.evolvex.rivinaka.verdant.R;
 public class SignUp extends AppCompatActivity {
 
     private TextView moveSignIn;
+    private TextView sellerRegister;
     private Button signUpBtn;
 
 
@@ -20,7 +21,8 @@ public class SignUp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
         moveSignIn = findViewById(R.id.tvSignIn);
-        signUpBtn= findViewById(R.id.btnSignUp);
+        sellerRegister = findViewById(R.id.tvSellerRegister);
+        signUpBtn = findViewById(R.id.btnSignUp);
 
         moveSignIn.setOnClickListener(v -> {
             Intent intent = new Intent(SignUp.this, SignIn.class);
@@ -28,7 +30,12 @@ public class SignUp extends AppCompatActivity {
             finish();
         });
 
-        signUpBtn.setOnClickListener(v->{
+        sellerRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(SignUp.this, SellerSignUp.class);
+            startActivity(intent);
+        });
+
+        signUpBtn.setOnClickListener(v -> {
             Intent intent = new Intent(SignUp.this, MainHome.class);
             startActivity(intent);
             finish();

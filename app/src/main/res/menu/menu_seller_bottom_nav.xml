@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_seller_dashboard"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Dashboard" />
+    <item
+        android:id="@+id/nav_seller_products"
+        android:icon="@drawable/plant"
+        android:title="Products" />
+    <item
+        android:id="@+id/nav_seller_orders"
+        android:icon="@android:drawable/ic_menu_my_calendar"
+        android:title="Orders" />
+    <item
+        android:id="@+id/nav_seller_analytics"
+        android:icon="@drawable/baseline_account_balance_wallet_24"
+        android:title="Analytics" />
+    <item
+        android:id="@+id/nav_seller_profile"
+        android:icon="@drawable/person_icon"
+        android:title="Profile" />
+</menu>
