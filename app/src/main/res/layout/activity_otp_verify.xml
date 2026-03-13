@@ -20,13 +20,12 @@
         app:tint="@color/white"
         tools:ignore="ContentDescription" />
 
-    <!-- FIXED: Added 'constraint' to the attribute name below -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="Forgot Password"
+        android:text="Verify Email"
         android:textColor="@color/white"
         android:textSize="20sp"
         android:textStyle="bold"
@@ -40,13 +39,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
-        android:text="Code has been send to +1 111 ******99"
+        android:text="Verification code has been sent to your email"
         android:textColor="@color/white"
         android:textSize="14sp"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+    <TextView
+        android:id="@+id/tvEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="user@example.com"
+        android:textColor="@color/app_green"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvInstruction" />
 
     <!-- 3. OTP Input Row -->
     <LinearLayout
@@ -57,7 +69,7 @@
         android:layout_marginTop="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvInstruction">
+        app:layout_constraintTop_toBottomOf="@+id/tvEmail">
 
         <EditText
             android:id="@+id/etOtp1"
@@ -96,10 +108,10 @@
             android:gravity="center"
             android:inputType="number"
             android:maxLength="1"
-            android:text="5"
             android:textColor="@color/white"
             android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="5" />
 
         <EditText
             android:id="@+id/etOtp4"
@@ -109,10 +121,10 @@
             android:gravity="center"
             android:inputType="number"
             android:maxLength="1"
-            android:text="6"
             android:textColor="@color/white"
             android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="6" />
     </LinearLayout>
 
     <!-- 4. Resend Timer -->

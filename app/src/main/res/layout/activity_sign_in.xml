@@ -46,7 +46,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:hint="Email"
         app:boxBackgroundColor="@color/input_field_bg"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
@@ -54,8 +53,7 @@
         app:boxCornerRadiusTopStart="16dp"
         app:boxStrokeWidth="0dp"
         app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/grey_text"
-        android:textColorHint="@color/grey_text"
+        app:hintEnabled="false"
         app:layout_constraintTop_toBottomOf="@+id/tvTitle">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -64,10 +62,12 @@
             android:drawableStart="@drawable/email"
             android:drawablePadding="12dp"
             android:drawableTint="@color/grey_text"
+            android:hint="Email"
             android:inputType="textEmailAddress"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
             android:textColor="@color/white"
+            android:textColorHint="@color/grey_text"
             android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -78,7 +78,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Password"
         app:boxBackgroundColor="@color/input_field_bg"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
@@ -86,23 +85,24 @@
         app:boxCornerRadiusTopStart="16dp"
         app:boxStrokeWidth="0dp"
         app:boxStrokeWidthFocused="0dp"
-        app:hintTextColor="@color/grey_text"
         app:endIconMode="password_toggle"
         app:endIconTint="@color/grey_text"
-        android:textColorHint="@color/grey_text"
+        app:hintEnabled="false"
         app:layout_constraintTop_toBottomOf="@+id/tilEmail">
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
             android:drawableStart="@android:drawable/ic_secure"
             android:drawablePadding="12dp"
-            android:drawableTint="@color/grey_text" />
+            android:drawableTint="@color/grey_text"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/grey_text"
+            android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- 5. Remember Me Checkbox -->

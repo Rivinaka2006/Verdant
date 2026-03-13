@@ -4,16 +4,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import lk.evolvex.rivinaka.verdant.R;
+
+import com.bumptech.glide.Glide;
+
 import java.util.List;
+
+import lk.evolvex.rivinaka.verdant.R;
 
 public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.SliderViewHolder> {
 
-    private List<Integer> images;
+    private List<?> images; // Support both Integer (resources) and String (URLs)
 
-    public ImageSliderAdapter(List<Integer> images) {
+    public ImageSliderAdapter(List<?> images) {
         this.images = images;
     }
 
@@ -26,7 +31,12 @@ public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull SliderViewHolder holder, int position) {
-        holder.imageView.setImageResource(images.get(position));
+        Object item = images.get(position);
+        
+        Glide.with(holder.itemView.getContext())
+                .load(item)
+                .placeholder(R.drawable.sample_plant)
+                .into(holder.imageView);
     }
 
     @Override

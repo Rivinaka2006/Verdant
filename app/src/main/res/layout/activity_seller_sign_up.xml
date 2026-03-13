@@ -69,8 +69,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:hint="Store Name"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -78,19 +76,22 @@
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etStoreName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableStart="@drawable/ic_person"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Store Name"
                     android:inputType="textCapWords"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -101,8 +102,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Business Email"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -110,19 +109,22 @@
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilStoreName">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableStart="@drawable/email"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Business Email"
                     android:inputType="textEmailAddress"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -133,8 +135,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Phone Number"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -142,19 +142,22 @@
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilEmail">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPhone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableStart="@android:drawable/ic_input_add"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Phone Number"
                     android:inputType="phone"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -165,8 +168,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Store Address"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -174,19 +175,22 @@
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilPhone">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etAddress"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableStart="@android:drawable/ic_dialog_map"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Store Address"
                     android:inputType="textPostalAddress"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -197,8 +201,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Password"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -208,19 +210,22 @@
                 app:boxStrokeWidthFocused="0dp"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/grey_text"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilAddress">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableStart="@android:drawable/ic_secure"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Password"
                     android:inputType="textPassword"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -231,8 +236,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Confirm Password"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -242,19 +245,22 @@
                 app:boxStrokeWidthFocused="0dp"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/grey_text"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilPassword">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etConfirmPassword"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableStart="@android:drawable/ic_secure"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Confirm Password"
                     android:inputType="textPassword"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 

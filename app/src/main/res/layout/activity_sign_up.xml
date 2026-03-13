@@ -58,8 +58,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:hint="Full Name"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -67,7 +65,7 @@
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tvTitle">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -76,10 +74,12 @@
                     android:drawableStart="@drawable/ic_person"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Full Name"
                     android:inputType="textPersonName"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -90,8 +90,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Email"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -99,7 +97,7 @@
                 app:boxCornerRadiusTopStart="16dp"
                 app:boxStrokeWidth="0dp"
                 app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilFullName">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -108,54 +106,22 @@
                     android:drawableStart="@drawable/email"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Email"
                     android:inputType="textEmailAddress"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 4. Phone Number Field -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilPhone"
-                style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:hint="Phone Number"
-                android:textColorHint="@color/grey_text"
-                app:boxBackgroundColor="@color/input_field_bg"
-                app:boxCornerRadiusBottomEnd="16dp"
-                app:boxCornerRadiusBottomStart="16dp"
-                app:boxCornerRadiusTopEnd="16dp"
-                app:boxCornerRadiusTopStart="16dp"
-                app:boxStrokeWidth="0dp"
-                app:boxStrokeWidthFocused="0dp"
-                app:hintTextColor="@color/grey_text"
-                app:layout_constraintTop_toBottomOf="@+id/tilEmail">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableStart="@android:drawable/ic_input_add"
-                    android:drawablePadding="12dp"
-                    android:drawableTint="@color/grey_text"
-                    android:inputType="phone"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- 5. Password Field -->
+            <!-- 4. Password Field -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPassword"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Password"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -165,8 +131,8 @@
                 app:boxStrokeWidthFocused="0dp"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/grey_text"
-                app:hintTextColor="@color/grey_text"
-                app:layout_constraintTop_toBottomOf="@+id/tilPhone">
+                app:hintEnabled="false"
+                app:layout_constraintTop_toBottomOf="@+id/tilEmail">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
@@ -174,22 +140,22 @@
                     android:drawableStart="@android:drawable/ic_secure"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Password"
                     android:inputType="textPassword"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 6. Confirm Password Field -->
+            <!-- 5. Confirm Password Field -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilConfirmPassword"
                 style="@style/Widget.MaterialComponents.TextInputLayout.FilledBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Confirm Password"
-                android:textColorHint="@color/grey_text"
                 app:boxBackgroundColor="@color/input_field_bg"
                 app:boxCornerRadiusBottomEnd="16dp"
                 app:boxCornerRadiusBottomStart="16dp"
@@ -199,7 +165,7 @@
                 app:boxStrokeWidthFocused="0dp"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/grey_text"
-                app:hintTextColor="@color/grey_text"
+                app:hintEnabled="false"
                 app:layout_constraintTop_toBottomOf="@+id/tilPassword">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -208,14 +174,16 @@
                     android:drawableStart="@android:drawable/ic_secure"
                     android:drawablePadding="12dp"
                     android:drawableTint="@color/grey_text"
+                    android:hint="Confirm Password"
                     android:inputType="textPassword"
                     android:paddingTop="16dp"
                     android:paddingBottom="16dp"
                     android:textColor="@color/white"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- 7. Terms & Conditions Checkbox -->
+            <!-- 6. Terms & Conditions Checkbox -->
             <CheckBox
                 android:id="@+id/cbTerms"
                 android:layout_width="wrap_content"
@@ -227,7 +195,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tilConfirmPassword" />
 
-            <!-- 8. Sign Up Button -->
+            <!-- 7. Sign Up Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSignUp"
                 android:layout_width="match_parent"
@@ -244,7 +212,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/cbTerms" />
 
-            <!-- 9. Divider -->
+            <!-- 8. Divider -->
             <LinearLayout
                 android:id="@+id/layoutDivider"
                 android:layout_width="match_parent"
@@ -274,7 +242,7 @@
                     android:background="@color/divider_color" />
             </LinearLayout>
 
-            <!-- 10. Social Buttons -->
+            <!-- 9. Social Buttons -->
             <LinearLayout
                 android:id="@+id/layoutSocial"
                 android:layout_width="wrap_content"
@@ -313,7 +281,7 @@
                     app:tint="@color/white" />
             </LinearLayout>
 
-            <!-- 11. Seller Option -->
+            <!-- 10. Seller Option -->
             <LinearLayout
                 android:id="@+id/layoutSellerOption"
                 android:layout_width="wrap_content"
@@ -339,7 +307,7 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- 12. Footer -->
+            <!-- 11. Footer -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -29,6 +29,18 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+
+    buildFeatures{
+        viewBinding true
+    }
+
+    packaging {
+        resources {
+            excludes += '/META-INF/NOTICE.md'
+            excludes += '/META-INF/LICENSE.md'
+            excludes += '/META-INF/base.kotlin_module'
+        }
+    }
 }
 
 dependencies {
@@ -37,9 +49,11 @@ dependencies {
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.viewpager2
+    implementation libs.firebase.auth
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    implementation libs.glide
 
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
@@ -48,4 +62,8 @@ dependencies {
     implementation libs.cardview
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.analytics
+    implementation(libs.firebase.firestore)
+
+    implementation libs.android.mail
+    implementation libs.android.activation
 }
