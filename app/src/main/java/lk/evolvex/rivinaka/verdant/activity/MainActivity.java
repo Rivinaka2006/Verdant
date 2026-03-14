@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 checkUserAuth();
             }
-        }, 2500);
+        }, 1500);
     }
 
     private void checkUserAuth() {

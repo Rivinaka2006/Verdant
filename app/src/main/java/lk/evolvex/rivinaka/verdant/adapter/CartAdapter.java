@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 import lk.evolvex.rivinaka.verdant.R;
@@ -18,9 +20,16 @@ import lk.evolvex.rivinaka.verdant.model.CartItem;
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder> {
 
     private List<CartItem> cartItems;
+    private OnCartItemChangeListener listener;
 
-    public CartAdapter(List<CartItem> cartItems) {
+    public interface OnCartItemChangeListener {
+        void onQuantityChanged(CartItem item);
+        void onItemDeleted(CartItem item);
+    }
+
+    public CartAdapter(List<CartItem> cartItems, OnCartItemChangeListener listener) {
         this.cartItems = cartItems;
+        this.listener = listener;
     }
 
     @NonNull
@@ -34,10 +43,38 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
         CartItem item = cartItems.get(position);
         holder.tvProductName.setText(item.getProductName());
-        holder.tvProductPrice.setText(item.getProductPrice());
+        holder.tvProductPrice.setText(String.format("Rs. %.2f", item.getProductPrice()));
         holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
-        // You can also load the product image here using a library like Glide or Picasso
-        // holder.ivProductImage.setImageResource(item.getProductImage());
+        
+        Glide.with(holder.itemView.getContext())
+                .load(item.getProductImage())
+                .placeholder(R.drawable.plant)
+                .into(holder.ivProductImage);
+
+        holder.btnIncrement.setOnClickListener(v -> {
+            item.setQuantity(item.getQuantity() + 1);
+            holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
+            if (listener != null) listener.onQuantityChanged(item);
+        });
+
+        holder.btnDecrement.setOnClickListener(v -> {
+            if (item.getQuantity() > 1) {
+                item.setQuantity(item.getQuantity() - 1);
+                holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
+                if (listener != null) listener.onQuantityChanged(item);
+            }
+        });
+
+        holder.ivDelete.setOnClickListener(v -> {
+            int currentPosition = holder.getAdapterPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                CartItem removedItem = cartItems.get(currentPosition);
+                cartItems.remove(currentPosition);
+                notifyItemRemoved(currentPosition);
+                notifyItemRangeChanged(currentPosition, cartItems.size());
+                if (listener != null) listener.onItemDeleted(removedItem);
+            }
+        });
     }
 
     @Override

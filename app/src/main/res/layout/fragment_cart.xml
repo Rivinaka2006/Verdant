@@ -30,14 +30,35 @@
         android:textSize="14sp"
         android:paddingBottom="12dp"/>
 
-    <!-- RecyclerView for items -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerCart"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="16dp"
-        android:clipToPadding="false"/>
+        android:layout_weight="1">
+
+        <!-- RecyclerView for items -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerCart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="16dp"
+            android:clipToPadding="false"/>
+
+        <ProgressBar
+            android:id="@+id/progressBarCart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/tvEmptyCart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Your cart is empty"
+            android:textColor="@color/text_secondary"
+            android:visibility="gone"/>
+    </FrameLayout>
 
     <!-- Bottom Summary Section -->
     <LinearLayout

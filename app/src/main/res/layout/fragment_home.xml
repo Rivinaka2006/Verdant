@@ -85,12 +85,16 @@
                 app:layout_constraintTop_toBottomOf="@id/cvPromo" />
 
             <TextView
+                android:id="@+id/tvSeeAllOffers"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="See All"
                 android:textColor="@color/app_green"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 app:layout_constraintBottom_toBottomOf="@id/tvSectionOffers"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvSectionOffers" />
@@ -121,12 +125,16 @@
                 app:layout_constraintTop_toBottomOf="@id/rvSpecialOffers" />
 
             <TextView
+                android:id="@+id/tvSeeAllPopular"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="See All"
                 android:textColor="@color/app_green"
                 android:textSize="14sp"
                 android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 app:layout_constraintBottom_toBottomOf="@id/tvSectionPopular"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/tvSectionPopular" />
@@ -142,11 +150,13 @@
                 app:layout_constraintTop_toBottomOf="@id/tvSectionPopular">
 
                 <LinearLayout
+                    android:id="@+id/layoutCategories"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/catAll"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_filter_active"
@@ -154,242 +164,131 @@
                         android:paddingVertical="8dp"
                         android:text="All"
                         android:textColor="@color/text_primary"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
+                        android:id="@+id/catIndoor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_filter_inactive"
                         android:paddingHorizontal="24dp"
                         android:paddingVertical="8dp"
-                        android:text="Monstera"
+                        android:text="Indoor Plants"
                         android:textColor="@color/app_green"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
+                        android:id="@+id/catOutdoor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_filter_inactive"
                         android:paddingHorizontal="24dp"
                         android:paddingVertical="8dp"
-                        android:text="Aloe"
+                        android:text="Outdoor Plants"
                         android:textColor="@color/app_green"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
 
                     <TextView
+                        android:id="@+id/catSucculents"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_filter_inactive"
                         android:paddingHorizontal="24dp"
                         android:paddingVertical="8dp"
-                        android:text="Palm"
+                        android:text="Succulents"
                         android:textColor="@color/app_green"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/catFlowering"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_filter_inactive"
+                        android:paddingHorizontal="24dp"
+                        android:paddingVertical="8dp"
+                        android:text="Flowering Plants"
+                        android:textColor="@color/app_green"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/catHerbs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_filter_inactive"
+                        android:paddingHorizontal="24dp"
+                        android:paddingVertical="8dp"
+                        android:text="Herbs"
+                        android:textColor="@color/app_green"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
                 </LinearLayout>
             </HorizontalScrollView>
 
-            <!-- VERTICAL PRODUCTS LIST -->
-            <LinearLayout
+            <!-- VERTICAL PRODUCTS LIST (Most Popular) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvPopularProducts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:orientation="vertical"
-                app:layout_constraintTop_toBottomOf="@id/svFilters">
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintTop_toBottomOf="@id/svFilters"
+                tools:listitem="@layout/item_popular_product" />
 
-                <!-- ITEM 1: Monstera Deliciosa -->
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardBackgroundColor="@color/app_surface"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp">
+            <!-- SECTION: For You -->
+            <TextView
+                android:id="@+id/tvSectionForYou"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="For You"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/rvPopularProducts" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="12dp">
+            <TextView
+                android:id="@+id/tvSeeAllForYou"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="See All"
+                android:textColor="@color/app_green"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                app:layout_constraintBottom_toBottomOf="@id/tvSectionForYou"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvSectionForYou" />
 
-                        <!-- Image -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="90dp"
-                            android:layout_height="90dp"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="#F5F5F5">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/sample_plant" />
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- Info -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:layout_gravity="center_vertical"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Monstera Deliciosa"
-                                android:textStyle="bold"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginTop="4dp">
-                                <ImageView
-                                    android:layout_width="12dp"
-                                    android:layout_height="12dp"
-                                    android:src="@android:drawable/btn_star_big_on"
-                                    app:tint="@color/app_green"/>
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="4.9 (5.2k sold)"
-                                    android:textSize="12sp"
-                                    android:layout_marginStart="4dp"
-                                    android:textColor="@color/text_secondary"/>
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="$45"
-                                    android:textStyle="bold"
-                                    android:textSize="18sp"
-                                    android:textColor="@color/app_green"/>
-
-                                <ImageView
-                                    android:layout_width="32dp"
-                                    android:layout_height="32dp"
-                                    android:src="@android:drawable/ic_input_add"
-                                    android:background="@drawable/bg_icon_circle"
-                                    android:backgroundTint="@color/app_green"
-                                    android:padding="6dp"
-                                    app:tint="@android:color/white"/>
-                            </LinearLayout>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-                <!-- ITEM 2: Aloe Vera -->
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:cardBackgroundColor="@color/app_surface"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="12dp">
-
-                        <!-- Image -->
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="90dp"
-                            android:layout_height="90dp"
-                            app:cardCornerRadius="16dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="#F5F5F5">
-
-                            <ImageView
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:scaleType="centerCrop"
-                                android:src="@drawable/sample_plant" />
-                        </androidx.cardview.widget.CardView>
-
-                        <!-- Info -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:layout_gravity="center_vertical"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Aloe Vera"
-                                android:textStyle="bold"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
-                                android:layout_marginTop="4dp">
-                                <ImageView
-                                    android:layout_width="12dp"
-                                    android:layout_height="12dp"
-                                    android:src="@android:drawable/btn_star_big_on"
-                                    app:tint="@color/app_green"/>
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="4.6 (2.1k sold)"
-                                    android:textSize="12sp"
-                                    android:layout_marginStart="4dp"
-                                    android:textColor="@color/text_secondary"/>
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:text="$15"
-                                    android:textStyle="bold"
-                                    android:textSize="18sp"
-                                    android:textColor="@color/app_green"/>
-
-                                <ImageView
-                                    android:layout_width="32dp"
-                                    android:layout_height="32dp"
-                                    android:src="@android:drawable/ic_input_add"
-                                    android:background="@drawable/bg_icon_circle"
-                                    android:backgroundTint="@color/app_green"
-                                    android:padding="6dp"
-                                    app:tint="@android:color/white"/>
-                            </LinearLayout>
-                        </LinearLayout>
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-            </LinearLayout>
+            <!-- GRID PRODUCTS LIST (For You) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvForYou"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="2"
+                app:layout_constraintTop_toBottomOf="@id/tvSectionForYou"
+                tools:listitem="@layout/item_for_you_product" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

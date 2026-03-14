@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="170dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="10dp"
-    android:layout_marginBottom="10dp"
+    android:layout_margin="8dp"
     android:orientation="vertical">
 
     <androidx.cardview.widget.CardView
@@ -21,14 +20,6 @@
             android:scaleType="centerCrop"
             android:src="@drawable/sample_plant" />
 
-        <ImageView
-            android:id="@+id/ivFavorite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="end|top"
-            android:layout_margin="12dp"
-            android:src="@drawable/heart"
-            app:tint="@color/app_green" />
     </androidx.cardview.widget.CardView>
 
     <TextView

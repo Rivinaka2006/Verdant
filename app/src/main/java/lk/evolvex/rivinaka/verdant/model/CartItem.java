@@ -1,32 +1,20 @@
 package lk.evolvex.rivinaka.verdant.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CartItem {
 
+    private String productId;
     private String productName;
-    private String productPrice;
+    private double productPrice;
     private int quantity;
-    private int productImage;
+    private String productImage;
 
-    public CartItem(String productName, String productPrice, int quantity, int productImage) {
-        this.productName = productName;
-        this.productPrice = productPrice;
-        this.quantity = quantity;
-        this.productImage = productImage;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public String getProductPrice() {
-        return productPrice;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public int getProductImage() {
-        return productImage;
-    }
 }

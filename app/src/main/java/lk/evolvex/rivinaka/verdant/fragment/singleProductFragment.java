@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,6 +15,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.List;
@@ -21,14 +24,18 @@ import java.util.List;
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
 import lk.evolvex.rivinaka.verdant.adapter.ImageSliderAdapter;
+import lk.evolvex.rivinaka.verdant.model.CartItem;
 import lk.evolvex.rivinaka.verdant.model.Product;
 
 public class singleProductFragment extends Fragment {
 
     private String productId;
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private TextView tvProductName, tvProductWeight, tvPrice, tvDescription, tvCareInstructions, tvWateringFrequency, tvLightRequirement;
     private ViewPager2 viewPager;
+    private Button btnAddToCart, btnBuyNow;
+    private Product currentProduct;
 
     public singleProductFragment() {
         // Required empty public constructor
@@ -53,6 +60,7 @@ public class singleProductFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         initViews(view);
         setupToolbar(view);
@@ -62,6 +70,14 @@ public class singleProductFragment extends Fragment {
         } else {
             Toast.makeText(getContext(), "Product not found", Toast.LENGTH_SHORT).show();
         }
+
+        btnAddToCart.setOnClickListener(v -> {
+            if (currentProduct != null) {
+                addToCart();
+            } else {
+                Toast.makeText(getContext(), "Loading product details...", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initViews(View view) {
@@ -73,6 +89,8 @@ public class singleProductFragment extends Fragment {
         tvWateringFrequency = view.findViewById(R.id.tv_watering_frequency_text);
         tvLightRequirement = view.findViewById(R.id.tv_light_requirement_text);
         viewPager = view.findViewById(R.id.viewPager_product_media);
+        btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
+        btnBuyNow = view.findViewById(R.id.btn_buy_now);
     }
 
     private void setupToolbar(View view) {
@@ -96,9 +114,10 @@ public class singleProductFragment extends Fragment {
         db.collection("products").document(productId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        Product product = documentSnapshot.toObject(Product.class);
-                        if (product != null) {
-                            displayProductData(product);
+                        currentProduct = documentSnapshot.toObject(Product.class);
+                        if (currentProduct != null) {
+                            currentProduct.setProductId(documentSnapshot.getId());
+                            displayProductData(currentProduct);
                         }
                     } else {
                         Toast.makeText(getContext(), "Product details not found", Toast.LENGTH_SHORT).show();
@@ -123,6 +142,50 @@ public class singleProductFragment extends Fragment {
             ImageSliderAdapter adapter = new ImageSliderAdapter(product.getImageUrls());
             viewPager.setAdapter(adapter);
         }
+    }
+
+    private void addToCart() {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(getContext(), "Please sign in to add to cart", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = mAuth.getCurrentUser().getUid();
+        // Using the productId directly to avoid NullPointerException
+        DocumentReference cartRef = db.collection("users").document(userId)
+                .collection("cart").document(productId);
+
+        cartRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                // Update quantity
+                CartItem existingItem = documentSnapshot.toObject(CartItem.class);
+                if (existingItem != null) {
+                    existingItem.setQuantity(existingItem.getQuantity() + 1);
+                    cartRef.set(existingItem)
+                            .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Quantity updated in cart", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update cart", Toast.LENGTH_SHORT).show());
+                }
+            } else {
+                // Add new item
+                String imageUrl = (currentProduct.getImageUrls() != null && !currentProduct.getImageUrls().isEmpty()) 
+                        ? currentProduct.getImageUrls().get(0) : "";
+                
+                CartItem newItem = CartItem.builder()
+                        .productId(productId)
+                        .productName(currentProduct.getName())
+                        .productPrice(currentProduct.getPrice())
+                        .quantity(1)
+                        .productImage(imageUrl)
+                        .build();
+
+                cartRef.set(newItem)
+                        .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Added to cart", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add to cart", Toast.LENGTH_SHORT).show());
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("SingleProductFragment", "Error checking cart", e);
+            Toast.makeText(getContext(), "Failed to access cart", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override

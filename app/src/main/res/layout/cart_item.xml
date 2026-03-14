@@ -68,7 +68,7 @@
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:background="@drawable/bg_otp_selector"
-                android:src="@drawable/ic_increase_quantity"
+                android:src="@drawable/ic_decrease_quantity"
                 app:tint="@color/white" />
 
             <TextView
@@ -86,7 +86,7 @@
                 android:layout_width="28dp"
                 android:layout_height="28dp"
                 android:background="@drawable/bg_otp_selector"
-                android:src="@drawable/ic_decrease_quantity"
+                android:src="@drawable/ic_increase_quantity"
                 app:tint="@color/white" />
         </LinearLayout>
 
