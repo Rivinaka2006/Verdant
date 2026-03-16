@@ -1,9 +1,11 @@
 [versions]
 agp = "8.13.2"
+appcompatVersion = "1.6.0"
 cardview = "1.0.0"
 constraintlayoutVersion = "2.1.4"
 firebaseBom = "34.10.0"
 glide = "5.0.5"
+gson = "2.13.2"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
@@ -12,17 +14,21 @@ lombok = "1.18.42"
 material = "1.13.0"
 activity = "1.12.3"
 constraintlayout = "2.2.1"
+payhereAndroidSdk = "v3.0.18"
 viewpager2 = "1.1.0"
 firebaseAuth = "24.0.1"
 androidMail = "1.6.8"
+payhere = "3.0.4"
 
 [libraries]
+appcompat-v160 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 constraintlayout-v214 = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayoutVersion" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -31,10 +37,12 @@ lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+payhere-android-sdk = { module = "com.github.PayHereDevs:payhere-android-sdk", version.ref = "payhereAndroidSdk" }
 viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 android-mail = { module = "com.sun.mail:android-mail", version.ref = "androidMail" }
 android-activation = { module = "com.sun.mail:android-activation", version.ref = "androidMail" }
+payhere-sdk = { module = "com.github.payhere-lk:payhere-android-sdk", version.ref = "payhere" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

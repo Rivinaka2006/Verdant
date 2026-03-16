@@ -43,6 +43,16 @@ android {
     }
 }
 
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url  "https://jitpack.io"
+        }
+    }
+}
+
 dependencies {
     implementation libs.appcompat
     implementation libs.material
@@ -66,4 +76,8 @@ dependencies {
 
     implementation libs.android.mail
     implementation libs.android.activation
+
+    implementation libs.payhere.android.sdk
+    implementation libs.appcompat.v160
+    implementation libs.gson
 }

@@ -1,9 +1,14 @@
 package lk.evolvex.rivinaka.verdant.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +40,7 @@ import lk.evolvex.rivinaka.verdant.fragment.CartFragment;
 import lk.evolvex.rivinaka.verdant.fragment.HomeFragment;
 import lk.evolvex.rivinaka.verdant.fragment.OrdersFragment;
 import lk.evolvex.rivinaka.verdant.fragment.ProfileFragment;
+import lk.evolvex.rivinaka.verdant.fragment.SearchFragment;
 import lk.evolvex.rivinaka.verdant.model.User;
 
 public class MainHome extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener,
@@ -43,9 +49,10 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
     private DrawerLayout drawerLayout;
     private BottomNavigationView bottomNavigationView;
     private NavigationView navigationView;
-    private ImageView btnDrawer, ivProfilePic;
+    private ImageView btnDrawer, ivProfilePic, searchTool;
     private ConstraintLayout headerContainer;
     private TextView tvGreeting, tvUsername;
+    private EditText etSearch;
     private ActivityNavMainBinding binding;
     private NavHeaderMainBinding navHeaderMainBinding;
     private FirebaseAuth mAuth;
@@ -73,6 +80,8 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
         headerContainer = findViewById(R.id.header_container);
         tvGreeting = findViewById(R.id.tvGreeting);
         tvUsername = findViewById(R.id.tvUsername);
+        etSearch = findViewById(R.id.etSearch);
+        searchTool = findViewById(R.id.searchTool);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer_layout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -89,6 +98,36 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
                 drawerLayout.openDrawer(GravityCompat.START);
             }
         });
+
+        if (etSearch != null) {
+            etSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                        String query = etSearch.getText().toString().trim();
+                        if (!query.isEmpty()) {
+                            hideKeyboard();
+                            performSearch(query);
+                        }
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
+        if (searchTool != null) {
+            searchTool.setOnClickListener(v -> {
+                String query = etSearch.getText().toString().trim();
+                if (!query.isEmpty()) {
+                    hideKeyboard();
+                    performSearch(query);
+                } else {
+                    Toast.makeText(MainHome.this, "Please enter a search term", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         if (savedInstanceState == null) {
             loadFragment(new HomeFragment());
             navigationView.setCheckedItem(R.id.nav_drawer_home);
@@ -96,6 +135,24 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
 
         updateGreeting();
         fetchUserData();
+    }
+
+    private void hideKeyboard() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+        }
+    }
+
+    private void performSearch(String query) {
+        SearchFragment searchFragment = SearchFragment.newInstance(query);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, searchFragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     private void updateGreeting() {

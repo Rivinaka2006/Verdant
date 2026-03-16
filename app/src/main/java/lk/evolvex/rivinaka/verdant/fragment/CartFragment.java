@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -26,7 +27,9 @@ import java.util.List;
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.CheckoutActivity;
 import lk.evolvex.rivinaka.verdant.adapter.CartAdapter;
+import lk.evolvex.rivinaka.verdant.model.Address;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
+import lk.evolvex.rivinaka.verdant.model.User;
 
 public class CartFragment extends Fragment implements CartAdapter.OnCartItemChangeListener {
 
@@ -34,7 +37,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
     private TextView tvSubtotal, tvShippingFee, tvTotal, tvEmptyCart, tvItemCount;
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems;
-    private final double SHIPPING_FEE = 100.00;
+    private final double SHIPPING_FEE = 400.00;
     private Button btnCheckout;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -62,8 +65,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
                 Toast.makeText(getContext(), "Your cart is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Intent intent = new Intent(getActivity(), CheckoutActivity.class);
-            startActivity(intent);
+            checkAddressesAndCheckout();
         });
     }
 
@@ -111,6 +113,52 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
                     if (progressBar != null) progressBar.setVisibility(View.GONE);
                     Toast.makeText(getContext(), "Failed to load cart", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void checkAddressesAndCheckout() {
+        if (mAuth.getCurrentUser() == null) return;
+
+        if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        if (isProfileComplete(user)) {
+                            Intent intent = new Intent(getActivity(), CheckoutActivity.class);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(getContext(), "Please complete your shipping and billing address in profile", Toast.LENGTH_LONG).show();
+                            BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_nav);
+                            if (bottomNav != null) {
+                                bottomNav.setSelectedItemId(R.id.nav_profile);
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    Toast.makeText(getContext(), "Error verifying profile information", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private boolean isProfileComplete(User user) {
+        if (user == null || user.getBilling() == null || user.getShipping() == null) {
+            return false;
+        }
+
+        Address billing = user.getBilling();
+        Address shipping = user.getShipping();
+
+        return isAddressValid(billing) && isAddressValid(shipping);
+    }
+
+    private boolean isAddressValid(Address address) {
+        return address.getAddress() != null && !address.getAddress().trim().isEmpty() &&
+                address.getCity() != null && !address.getCity().trim().isEmpty() &&
+                address.getFirstName() != null && !address.getFirstName().trim().isEmpty();
     }
 
     private void updateUI() {

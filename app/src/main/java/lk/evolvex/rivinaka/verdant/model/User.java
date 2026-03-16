@@ -24,6 +24,14 @@ public class User {
 
     private String profileImageUrl;
 
+    private String address;
+
+    private Address billing;
+
+    private Address shipping;
+
+    private Boolean sameAsBilling;
+
     private String defaultAddressId;
 
     private String fcmToken;

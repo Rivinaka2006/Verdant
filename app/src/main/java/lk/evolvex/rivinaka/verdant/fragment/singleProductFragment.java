@@ -13,21 +13,28 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
 import lk.evolvex.rivinaka.verdant.adapter.ImageSliderAdapter;
+import lk.evolvex.rivinaka.verdant.adapter.SpecialOfferAdapter;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
 import lk.evolvex.rivinaka.verdant.model.Product;
+import lk.evolvex.rivinaka.verdant.model.Nursery;
 
-public class singleProductFragment extends Fragment {
+public class singleProductFragment extends Fragment implements SpecialOfferAdapter.OnProductClickListener {
 
     private String productId;
     private FirebaseFirestore db;
@@ -36,6 +43,16 @@ public class singleProductFragment extends Fragment {
     private ViewPager2 viewPager;
     private Button btnAddToCart, btnBuyNow;
     private Product currentProduct;
+
+    // Seller Details Views
+    private ImageView ivSellerProfile;
+    private TextView tvSellerName, tvSellerRating;
+    private Button btnViewShop;
+
+    // Similar Items
+    private RecyclerView rvSimilarItems;
+    private SpecialOfferAdapter similarItemsAdapter;
+    private List<Product> similarItemsList;
 
     public singleProductFragment() {
         // Required empty public constructor
@@ -91,6 +108,19 @@ public class singleProductFragment extends Fragment {
         viewPager = view.findViewById(R.id.viewPager_product_media);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
         btnBuyNow = view.findViewById(R.id.btn_buy_now);
+
+        // Seller views
+        ivSellerProfile = view.findViewById(R.id.iv_seller_profile);
+        tvSellerName = view.findViewById(R.id.tv_seller_name);
+        tvSellerRating = view.findViewById(R.id.tv_seller_rating);
+        btnViewShop = view.findViewById(R.id.btn_view_shop);
+
+        // Similar Items
+        rvSimilarItems = view.findViewById(R.id.rv_similar_items);
+        similarItemsList = new ArrayList<>();
+        similarItemsAdapter = new SpecialOfferAdapter(similarItemsList, this);
+        rvSimilarItems.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvSimilarItems.setAdapter(similarItemsAdapter);
     }
 
     private void setupToolbar(View view) {
@@ -118,6 +148,14 @@ public class singleProductFragment extends Fragment {
                         if (currentProduct != null) {
                             currentProduct.setProductId(documentSnapshot.getId());
                             displayProductData(currentProduct);
+                            
+                            // Load nursery/seller details
+                            if (currentProduct.getNurseryId() != null && !currentProduct.getNurseryId().isEmpty()) {
+                                loadSellerDetails(currentProduct.getNurseryId());
+                            }
+
+                            // Load similar items based on category
+                            loadSimilarItems(currentProduct.getCategory());
                         }
                     } else {
                         Toast.makeText(getContext(), "Product details not found", Toast.LENGTH_SHORT).show();
@@ -126,6 +164,52 @@ public class singleProductFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     Log.e("SingleProductFragment", "Error loading product", e);
                     Toast.makeText(getContext(), "Failed to load details", Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void loadSimilarItems(String category) {
+        if (category == null) return;
+
+        db.collection("products")
+                .whereEqualTo("category", category)
+                .whereEqualTo("available", true)
+                .limit(10)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    similarItemsList.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Product product = document.toObject(Product.class);
+                        product.setProductId(document.getId());
+                        
+                        // Don't show the current product in similar items
+                        if (!product.getProductId().equals(productId)) {
+                            similarItemsList.add(product);
+                        }
+                    }
+                    similarItemsAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e -> Log.e("SingleProductFragment", "Error loading similar items", e));
+    }
+
+    private void loadSellerDetails(String id) {
+        db.collection("nurseries").document(id).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Nursery nursery = documentSnapshot.toObject(Nursery.class);
+                        if (nursery != null) {
+                            displaySellerData(nursery);
+                        }
+                    } else {
+                        db.collection("nurseries").whereEqualTo("ownerId", id).get()
+                                .addOnSuccessListener(queryDocumentSnapshots -> {
+                                    if (!queryDocumentSnapshots.isEmpty()) {
+                                        Nursery nursery = queryDocumentSnapshots.getDocuments().get(0).toObject(Nursery.class);
+                                        if (nursery != null) {
+                                            displaySellerData(nursery);
+                                        }
+                                    }
+                                });
+                    }
                 });
     }
 
@@ -144,6 +228,39 @@ public class singleProductFragment extends Fragment {
         }
     }
 
+    private void displaySellerData(Nursery nursery) {
+        if (getActivity() == null) return;
+        
+        tvSellerName.setText(nursery.getNurseryName());
+        tvSellerRating.setText(String.format("%.1f (%d reviews)", nursery.getRatingAverage(), nursery.getTotalReviews()));
+        
+        if (nursery.getBannerImageUrl() != null && !nursery.getBannerImageUrl().isEmpty()) {
+            Glide.with(this)
+                    .load(nursery.getBannerImageUrl())
+                    .placeholder(R.drawable.person_icon)
+                    .error(R.drawable.person_icon)
+                    .into(ivSellerProfile);
+        }
+
+        btnViewShop.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Opening " + nursery.getNurseryName(), Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    @Override
+    public void onProductClick(Product product) {
+        // Reload fragment with new product
+        Fragment fragment = new singleProductFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("productId", product.getProductId());
+        fragment.setArguments(bundle);
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
     private void addToCart() {
         if (mAuth.getCurrentUser() == null) {
             Toast.makeText(getContext(), "Please sign in to add to cart", Toast.LENGTH_SHORT).show();
@@ -151,22 +268,18 @@ public class singleProductFragment extends Fragment {
         }
 
         String userId = mAuth.getCurrentUser().getUid();
-        // Using the productId directly to avoid NullPointerException
         DocumentReference cartRef = db.collection("users").document(userId)
                 .collection("cart").document(productId);
 
         cartRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
-                // Update quantity
                 CartItem existingItem = documentSnapshot.toObject(CartItem.class);
                 if (existingItem != null) {
                     existingItem.setQuantity(existingItem.getQuantity() + 1);
                     cartRef.set(existingItem)
-                            .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Quantity updated in cart", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update cart", Toast.LENGTH_SHORT).show());
+                            .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Quantity updated in cart", Toast.LENGTH_SHORT).show());
                 }
             } else {
-                // Add new item
                 String imageUrl = (currentProduct.getImageUrls() != null && !currentProduct.getImageUrls().isEmpty()) 
                         ? currentProduct.getImageUrls().get(0) : "";
                 
@@ -179,12 +292,8 @@ public class singleProductFragment extends Fragment {
                         .build();
 
                 cartRef.set(newItem)
-                        .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Added to cart", Toast.LENGTH_SHORT).show())
-                        .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add to cart", Toast.LENGTH_SHORT).show());
+                        .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Added to cart", Toast.LENGTH_SHORT).show());
             }
-        }).addOnFailureListener(e -> {
-            Log.e("SingleProductFragment", "Error checking cart", e);
-            Toast.makeText(getContext(), "Failed to access cart", Toast.LENGTH_SHORT).show();
         });
     }
 

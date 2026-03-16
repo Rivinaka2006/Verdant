@@ -23,6 +23,7 @@ public class PopularProductAdapter extends RecyclerView.Adapter<PopularProductAd
 
     public interface OnProductClickListener {
         void onProductClick(Product product);
+        void onAddToCartClick(Product product);
     }
 
     public PopularProductAdapter(List<Product> productList, OnProductClickListener listener) {
@@ -81,7 +82,9 @@ public class PopularProductAdapter extends RecyclerView.Adapter<PopularProductAd
             });
 
             btnAdd.setOnClickListener(v -> {
-                // Handle add to cart or similar action
+                if (listener != null) {
+                    listener.onAddToCartClick(product);
+                }
             });
         }
     }

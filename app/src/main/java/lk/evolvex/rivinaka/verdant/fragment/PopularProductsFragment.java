@@ -13,6 +13,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -23,6 +25,7 @@ import java.util.List;
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
 import lk.evolvex.rivinaka.verdant.adapter.PopularProductAdapter;
+import lk.evolvex.rivinaka.verdant.model.CartItem;
 import lk.evolvex.rivinaka.verdant.model.Product;
 
 public class PopularProductsFragment extends Fragment implements PopularProductAdapter.OnProductClickListener {
@@ -31,6 +34,7 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
     private PopularProductAdapter adapter;
     private List<Product> productList;
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -43,6 +47,7 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
         super.onViewCreated(view, savedInstanceState);
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         if (getActivity() instanceof MainHome) {
             MainHome mainHome = (MainHome) getActivity();
@@ -96,6 +101,48 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
                 .replace(R.id.fragment_container, singleProductFragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    @Override
+    public void onAddToCartClick(Product product) {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(getContext(), "Please sign in to add to cart", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = mAuth.getCurrentUser().getUid();
+        DocumentReference cartRef = db.collection("users").document(userId)
+                .collection("cart").document(product.getProductId());
+
+        cartRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                CartItem existingItem = documentSnapshot.toObject(CartItem.class);
+                if (existingItem != null) {
+                    existingItem.setQuantity(existingItem.getQuantity() + 1);
+                    cartRef.set(existingItem)
+                            .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Quantity updated in cart", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update cart", Toast.LENGTH_SHORT).show());
+                }
+            } else {
+                String imageUrl = (product.getImageUrls() != null && !product.getImageUrls().isEmpty())
+                        ? product.getImageUrls().get(0) : "";
+
+                CartItem newItem = CartItem.builder()
+                        .productId(product.getProductId())
+                        .productName(product.getName())
+                        .productPrice(product.getPrice())
+                        .quantity(1)
+                        .productImage(imageUrl)
+                        .build();
+
+                cartRef.set(newItem)
+                        .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Added to cart", Toast.LENGTH_SHORT).show())
+                        .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add to cart", Toast.LENGTH_SHORT).show());
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("PopularProductsFrag", "Error checking cart", e);
+            Toast.makeText(getContext(), "Failed to access cart", Toast.LENGTH_SHORT).show();
+        });
     }
 
     @Override

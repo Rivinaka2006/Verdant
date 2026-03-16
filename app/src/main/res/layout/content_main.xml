@@ -109,12 +109,14 @@
             app:layout_constraintTop_toBottomOf="@id/cvProfile">
 
             <ImageView
+                android:id="@+id/searchTool"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_search"
                 app:tint="@color/text_hint" />
 
             <EditText
+                android:id="@+id/etSearch"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -122,9 +124,12 @@
                 android:hint="Search..."
                 android:paddingStart="12dp"
                 android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_hint" />
+                android:textColorHint="@color/text_hint"
+                android:imeOptions="actionSearch"
+                android:inputType="text" />
 
             <ImageView
+                android:id="@+id/btnFilter"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:src="@android:drawable/ic_menu_sort_by_size"
