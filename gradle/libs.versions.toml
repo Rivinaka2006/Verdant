@@ -19,6 +19,7 @@ viewpager2 = "1.1.0"
 firebaseAuth = "24.0.1"
 androidMail = "1.6.8"
 payhere = "3.0.4"
+mpandroidchart = "v3.1.0"
 
 [libraries]
 appcompat-v160 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -43,6 +44,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version
 android-mail = { module = "com.sun.mail:android-mail", version.ref = "androidMail" }
 android-activation = { module = "com.sun.mail:android-activation", version.ref = "androidMail" }
 payhere-sdk = { module = "com.github.payhere-lk:payhere-android-sdk", version.ref = "payhere" }
+mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

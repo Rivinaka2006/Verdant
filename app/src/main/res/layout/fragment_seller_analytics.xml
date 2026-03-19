@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:singleSelection="true"
-            app:checkedButton="@+id/btnToday">
+            app:checkedButton="@+id/btn7Days">
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnToday"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -54,15 +54,6 @@
                 android:text="30D"
                 android:textColor="@color/white"
                 app:strokeColor="@color/divider_color" />
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCustom"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Custom"
-                android:textColor="@color/white"
-                app:strokeColor="@color/divider_color" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <!-- Revenue Trend Card -->
@@ -84,11 +75,12 @@
                     android:text="Revenue Trend"
                     android:textColor="@color/white"
                     android:textStyle="bold" />
-                <View
+                
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/revenueTrendChart"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginTop="8dp"
-                    android:background="#2C2F38" />
+                    android:layout_height="250dp"
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -111,15 +103,16 @@
                     android:text="Top Selling Plants"
                     android:textColor="@color/white"
                     android:textStyle="bold" />
-                <View
+                
+                <com.github.mikephil.charting.charts.HorizontalBarChart
+                    android:id="@+id/topSellingChart"
                     android:layout_width="match_parent"
-                    android:layout_height="150dp"
-                    android:layout_marginTop="8dp"
-                    android:background="#2C2F38" />
+                    android:layout_height="250dp"
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Delivery Heatmap Placeholder -->
+        <!-- Category Distribution -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -135,21 +128,15 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Delivery Heatmap"
+                    android:text="Sales by Category"
                     android:textColor="@color/white"
                     android:textStyle="bold" />
-                <FrameLayout
+                
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/categoryPieChart"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginTop="8dp"
-                    android:background="#2C2F38">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:textColor="@color/grey_text"
-                        android:text="Google Maps Preview" />
-                </FrameLayout>
+                    android:layout_height="250dp"
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

@@ -1,5 +1,6 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -24,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
+import lk.evolvex.rivinaka.verdant.activity.SetFingerPrint;
 import lk.evolvex.rivinaka.verdant.model.Address;
 import lk.evolvex.rivinaka.verdant.model.User;
 
@@ -35,6 +38,7 @@ public class ProfileFragment extends Fragment {
     private ImageView ivProfileImage, ivBillingArrow, ivShippingArrow;
     private LinearLayout llBillingHeader, llBillingContent, llShippingHeader, llShippingContent;
     private CheckBox cbSameAsBilling;
+    private SwitchMaterial swBiometric;
     private MaterialButton btnSave;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -58,6 +62,7 @@ public class ProfileFragment extends Fragment {
         initViews(view);
         setupExpandableSections();
         setupCheckboxLogic();
+        setupBiometricLogic();
         loadUserProfile();
 
         btnSave.setOnClickListener(v -> saveUserProfile());
@@ -72,6 +77,9 @@ public class ProfileFragment extends Fragment {
         etEmail = view.findViewById(R.id.etEmail);
         etPhone = view.findViewById(R.id.etPhone);
         etAddress = view.findViewById(R.id.etAddress);
+
+        // Biometric Switch
+        swBiometric = view.findViewById(R.id.swBiometric);
 
         // Checkbox
         cbSameAsBilling = view.findViewById(R.id.cbSameAsBilling);
@@ -139,6 +147,15 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    private void setupBiometricLogic() {
+        swBiometric.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked && buttonView.isPressed()) {
+                Intent intent = new Intent(getContext(), SetFingerPrint.class);
+                startActivity(intent);
+            }
+        });
+    }
+
     private void loadUserProfile() {
         if (mAuth.getCurrentUser() == null) return;
 
@@ -162,6 +179,9 @@ public class ProfileFragment extends Fragment {
                             etEmail.setText(user.getEmail());
                             etPhone.setText(user.getPhone());
                             etAddress.setText(user.getAddress());
+
+                            // Biometric state
+                            swBiometric.setChecked(user.getBiometricEnabled() != null && user.getBiometricEnabled());
 
                             // Load Billing Info
                             Address billing = user.getBilling();
@@ -242,6 +262,7 @@ public class ProfileFragment extends Fragment {
         updates.put("billing", billing);
         updates.put("shipping", shipping);
         updates.put("sameAsBilling", cbSameAsBilling.isChecked());
+        updates.put("biometricEnabled", swBiometric.isChecked());
 
         db.collection("users").document(userId).update(updates)
                 .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show())

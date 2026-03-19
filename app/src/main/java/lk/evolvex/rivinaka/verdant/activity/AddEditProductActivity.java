@@ -18,7 +18,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.model.Product;
@@ -30,6 +32,9 @@ public class AddEditProductActivity extends AppCompatActivity {
     private MaterialButton btnSave;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private String productId;
+    private boolean isEditMode = false;
+    private Product existingProduct;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +47,13 @@ public class AddEditProductActivity extends AppCompatActivity {
 
         initViews();
         setupDropdowns();
+
+        productId = getIntent().getStringExtra("productId");
+        if (productId != null) {
+            isEditMode = true;
+            loadProductDetails();
+            btnSave.setText("Update Product");
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -74,6 +86,29 @@ public class AddEditProductActivity extends AppCompatActivity {
         spinnerLight.setAdapter(lightAdapter);
     }
 
+    private void loadProductDetails() {
+        db.collection("products").document(productId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        existingProduct = documentSnapshot.toObject(Product.class);
+                        if (existingProduct != null) {
+                            etPlantName.setText(existingProduct.getName());
+                            etPrice.setText(String.valueOf(existingProduct.getPrice()));
+                            etStock.setText(String.valueOf(existingProduct.getStock()));
+                            etDescription.setText(existingProduct.getDescription());
+                            etCareInstructions.setText(existingProduct.getCareInstructions());
+                            etWaterFrequency.setText(existingProduct.getWaterFrequency());
+                            spinnerCategory.setText(existingProduct.getCategory(), false);
+                            spinnerLight.setText(existingProduct.getLightRequirement(), false);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to load product", Toast.LENGTH_SHORT).show();
+                    finish();
+                });
+    }
+
     private void saveProduct() {
         String name = etPlantName.getText().toString().trim();
         String priceStr = etPrice.getText().toString().trim();
@@ -95,13 +130,24 @@ public class AddEditProductActivity extends AppCompatActivity {
         if (mAuth.getCurrentUser() == null) return;
         String sellerId = mAuth.getCurrentUser().getUid();
 
+        btnSave.setEnabled(false);
+
+        if (isEditMode) {
+            updateProduct(name, price, stock, category, description, careInstructions, waterFreq, lightReq);
+        } else {
+            addNewProduct(name, price, stock, category, description, careInstructions, waterFreq, lightReq, sellerId);
+        }
+    }
+
+    private void addNewProduct(String name, double price, int stock, String category, String description,
+                               String careInstructions, String waterFreq, String lightReq, String sellerId) {
         List<String> dummyImageUrls = new ArrayList<>();
         dummyImageUrls.add("https://images.unsplash.com/photo-1597055181300-e3633a207519");
 
         Product product = Product.builder()
                 .name(name)
                 .price(price)
-                .oldPrice(price * 1.2) // Just a dummy old price
+                .oldPrice(price * 1.2)
                 .stock(stock)
                 .category(category)
                 .description(description)
@@ -116,10 +162,33 @@ public class AddEditProductActivity extends AppCompatActivity {
                 .soldCount(0)
                 .build();
 
-        btnSave.setEnabled(false);
         db.collection("products").add(product)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSave.setEnabled(true);
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void updateProduct(String name, double price, int stock, String category, String description,
+                               String careInstructions, String waterFreq, String lightReq) {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("name", name);
+        updates.put("price", price);
+        updates.put("stock", stock);
+        updates.put("category", category);
+        updates.put("description", description);
+        updates.put("careInstructions", careInstructions);
+        updates.put("waterFrequency", waterFreq);
+        updates.put("lightRequirement", lightReq);
+        updates.put("available", stock > 0);
+
+        db.collection("products").document(productId).update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Product updated successfully", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {

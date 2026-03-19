@@ -49,14 +49,15 @@
                         android:text="Today's Orders"
                         android:textSize="14sp"
                         android:textColor="@color/grey_text"/>
+
                     <TextView
                         android:id="@+id/tvTodayOrders"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="12"
+                        android:text="____"
+                        android:textColor="@color/app_green"
                         android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/app_green"/>
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -85,7 +86,7 @@
                         android:id="@+id/tvRevenueToday"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="LKR 4450.00"
+                        android:text="LKR ______"
                         android:textColor="@color/app_green"
                         android:textSize="22sp"
                         android:textStyle="bold" />
@@ -112,14 +113,15 @@
                         android:text="Low Stock Items"
                         android:textSize="14sp"
                         android:textColor="@color/grey_text"/>
+
                     <TextView
                         android:id="@+id/tvLowStock"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="5"
+                        android:text="___"
+                        android:textColor="#FF5252"
                         android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#FF5252"/>
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -143,23 +145,24 @@
                         android:text="Pending Deliveries"
                         android:textSize="14sp"
                         android:textColor="@color/grey_text"/>
+
                     <TextView
                         android:id="@+id/tvPendingDeliveries"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="8"
+                        android:text="___"
+                        android:textColor="#FFD740"
                         android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFD740"/>
+                        android:textStyle="bold" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
         </GridLayout>
 
-        <!-- Mini Sales Chart Placeholder -->
+        <!-- Mini Sales Chart -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="250dp"
             android:layout_marginTop="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
@@ -176,10 +179,11 @@
                     android:textColor="@color/white"
                     android:textStyle="bold"
                     android:layout_marginBottom="8dp"/>
-                <View
+                
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/salesChart"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="#2C2F38"/> <!-- Placeholder for Chart -->
+                    android:layout_height="match_parent" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

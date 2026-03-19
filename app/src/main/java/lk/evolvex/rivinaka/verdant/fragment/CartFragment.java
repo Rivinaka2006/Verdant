@@ -1,7 +1,7 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +16,11 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -25,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lk.evolvex.rivinaka.verdant.R;
-import lk.evolvex.rivinaka.verdant.activity.CheckoutActivity;
+import lk.evolvex.rivinaka.verdant.activity.MainHome;
 import lk.evolvex.rivinaka.verdant.adapter.CartAdapter;
 import lk.evolvex.rivinaka.verdant.model.Address;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
@@ -65,6 +68,21 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
                 Toast.makeText(getContext(), "Your cart is empty", Toast.LENGTH_SHORT).show();
                 return;
             }
+            
+            // Check if any items are unavailable
+            boolean hasUnavailableItems = false;
+            for (CartItem item : cartItems) {
+                if (!item.isAvailable()) {
+                    hasUnavailableItems = true;
+                    break;
+                }
+            }
+            
+            if (hasUnavailableItems) {
+                Toast.makeText(getContext(), "Please remove unavailable items before checkout", Toast.LENGTH_LONG).show();
+                return;
+            }
+            
             checkAddressesAndCheckout();
         });
     }
@@ -100,14 +118,45 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
         db.collection("users").document(userId).collection("cart")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    cartItems.clear();
+                    List<CartItem> tempItems = new ArrayList<>();
+                    List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+                    
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         CartItem item = document.toObject(CartItem.class);
-                        cartItems.add(item);
+                        tempItems.add(item);
+                        // Fetch latest availability from products collection
+                        tasks.add(db.collection("products").document(item.getProductId()).get());
                     }
-                    cartAdapter.notifyDataSetChanged();
-                    updateUI();
-                    if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    
+                    if (tasks.isEmpty()) {
+                        cartItems.clear();
+                        updateUI();
+                        if (progressBar != null) progressBar.setVisibility(View.GONE);
+                        return;
+                    }
+
+                    Tasks.whenAllComplete(tasks).addOnCompleteListener(t -> {
+                        cartItems.clear();
+                        for (int i = 0; i < tasks.size(); i++) {
+                            CartItem item = tempItems.get(i);
+                            DocumentSnapshot productDoc = tasks.get(i).getResult();
+                            if (productDoc.exists()) {
+                                Boolean available = productDoc.getBoolean("available");
+                                item.setAvailable(available != null && available);
+                                // Also update price and name in case they changed
+                                Double price = productDoc.getDouble("price");
+                                if (price != null) item.setProductPrice(price);
+                                String name = productDoc.getString("name");
+                                if (name != null) item.setProductName(name);
+                            } else {
+                                item.setAvailable(false); // Product no longer exists
+                            }
+                            cartItems.add(item);
+                        }
+                        cartAdapter.notifyDataSetChanged();
+                        updateUI();
+                        if (progressBar != null) progressBar.setVisibility(View.GONE);
+                    });
                 })
                 .addOnFailureListener(e -> {
                     if (progressBar != null) progressBar.setVisibility(View.GONE);
@@ -127,8 +176,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
                     if (documentSnapshot.exists()) {
                         User user = documentSnapshot.toObject(User.class);
                         if (isProfileComplete(user)) {
-                            Intent intent = new Intent(getActivity(), CheckoutActivity.class);
-                            startActivity(intent);
+                            navigateToCheckout();
                         } else {
                             Toast.makeText(getContext(), "Please complete your shipping and billing address in profile", Toast.LENGTH_LONG).show();
                             BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_nav);
@@ -142,6 +190,17 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
                     if (progressBar != null) progressBar.setVisibility(View.GONE);
                     Toast.makeText(getContext(), "Error verifying profile information", Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void navigateToCheckout() {
+        if (getActivity() instanceof MainHome) {
+            ((MainHome) getActivity()).setBottomNavVisibility(View.GONE);
+        }
+        
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new CheckoutFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     private boolean isProfileComplete(User user) {
@@ -177,7 +236,9 @@ public class CartFragment extends Fragment implements CartAdapter.OnCartItemChan
     private void updateTotals() {
         double subtotal = 0;
         for (CartItem item : cartItems) {
-            subtotal += item.getProductPrice() * item.getQuantity();
+            if (item.isAvailable()) {
+                subtotal += item.getProductPrice() * item.getQuantity();
+            }
         }
         
         double total = subtotal > 0 ? subtotal + SHIPPING_FEE : 0;

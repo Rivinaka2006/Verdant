@@ -65,6 +65,10 @@ public class SellerMainHome extends AppCompatActivity implements BottomNavigatio
         return false;
     }
 
+    public void selectTab(int itemId) {
+        bottomNavigationView.setSelectedItemId(itemId);
+    }
+
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container_seller, fragment)

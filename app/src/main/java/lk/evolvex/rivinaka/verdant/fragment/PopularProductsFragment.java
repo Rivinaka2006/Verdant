@@ -119,6 +119,7 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
                 CartItem existingItem = documentSnapshot.toObject(CartItem.class);
                 if (existingItem != null) {
                     existingItem.setQuantity(existingItem.getQuantity() + 1);
+                    existingItem.setAvailable(product.isAvailable());
                     cartRef.set(existingItem)
                             .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Quantity updated in cart", Toast.LENGTH_SHORT).show())
                             .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update cart", Toast.LENGTH_SHORT).show());
@@ -133,6 +134,7 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
                         .productPrice(product.getPrice())
                         .quantity(1)
                         .productImage(imageUrl)
+                        .available(product.isAvailable())
                         .build();
 
                 cartRef.set(newItem)

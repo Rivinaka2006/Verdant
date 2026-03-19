@@ -226,6 +226,16 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
             ImageSliderAdapter adapter = new ImageSliderAdapter(product.getImageUrls());
             viewPager.setAdapter(adapter);
         }
+        
+        if (!product.isAvailable()) {
+            btnAddToCart.setEnabled(false);
+            btnAddToCart.setText("Unavailable");
+            btnBuyNow.setEnabled(false);
+        } else {
+            btnAddToCart.setEnabled(true);
+            btnAddToCart.setText("Add to Cart");
+            btnBuyNow.setEnabled(true);
+        }
     }
 
     private void displaySellerData(Nursery nursery) {
@@ -276,6 +286,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                 CartItem existingItem = documentSnapshot.toObject(CartItem.class);
                 if (existingItem != null) {
                     existingItem.setQuantity(existingItem.getQuantity() + 1);
+                    existingItem.setAvailable(currentProduct.isAvailable());
                     cartRef.set(existingItem)
                             .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Quantity updated in cart", Toast.LENGTH_SHORT).show());
                 }
@@ -289,6 +300,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                         .productPrice(currentProduct.getPrice())
                         .quantity(1)
                         .productImage(imageUrl)
+                        .available(currentProduct.isAvailable())
                         .build();
 
                 cartRef.set(newItem)

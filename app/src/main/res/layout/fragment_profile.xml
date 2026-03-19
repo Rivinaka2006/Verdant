@@ -178,6 +178,26 @@
                     android:textColorHint="@color/grey_text" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Security Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Security"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/swBiometric"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Enable Fingerprint Login"
+                android:textColor="@color/white"
+                app:thumbTint="@color/app_green"
+                app:trackTint="@color/app_green" />
+
             <!-- Billing & Shipping Information Section Title -->
             <TextView
                 android:layout_width="wrap_content"

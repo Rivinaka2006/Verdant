@@ -46,6 +46,18 @@
             app:layout_constraintTop_toBottomOf="@+id/tvProductName"
             tools:text="Rs 500" />
 
+        <TextView
+            android:id="@+id/tvUnavailable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Unavailable at this moment"
+            android:textColor="@android:color/holo_red_light"
+            android:textSize="12sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@+id/tvProductName"
+            app:layout_constraintTop_toBottomOf="@+id/tvProductPrice"
+            tools:visibility="visible" />
+
         <ImageView
             android:id="@+id/ivDelete"
             android:layout_width="24dp"
@@ -56,6 +68,7 @@
             app:tint="@color/white" />
 
         <LinearLayout
+            android:id="@+id/llQuantityContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

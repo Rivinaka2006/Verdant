@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -51,6 +52,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                 .placeholder(R.drawable.plant)
                 .into(holder.ivProductImage);
 
+        if (item.isAvailable()) {
+            holder.tvUnavailable.setVisibility(View.GONE);
+            holder.llQuantityContainer.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvUnavailable.setVisibility(View.VISIBLE);
+            holder.llQuantityContainer.setVisibility(View.GONE);
+        }
+
         holder.btnIncrement.setOnClickListener(v -> {
             item.setQuantity(item.getQuantity() + 1);
             holder.tvQuantity.setText(String.valueOf(item.getQuantity()));
@@ -88,9 +97,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         TextView tvProductName;
         TextView tvProductPrice;
         TextView tvQuantity;
+        TextView tvUnavailable;
         ImageButton btnDecrement;
         ImageButton btnIncrement;
         ImageView ivDelete;
+        LinearLayout llQuantityContainer;
 
         public CartViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -98,9 +109,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             tvProductName = itemView.findViewById(R.id.tvProductName);
             tvProductPrice = itemView.findViewById(R.id.tvProductPrice);
             tvQuantity = itemView.findViewById(R.id.tvQuantity);
+            tvUnavailable = itemView.findViewById(R.id.tvUnavailable);
             btnDecrement = itemView.findViewById(R.id.btnDecrement);
             btnIncrement = itemView.findViewById(R.id.btnIncrement);
             ivDelete = itemView.findViewById(R.id.ivDelete);
+            llQuantityContainer = itemView.findViewById(R.id.llQuantityContainer);
         }
     }
 }

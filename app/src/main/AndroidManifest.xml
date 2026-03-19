@@ -40,10 +40,6 @@
             android:name=".activity.SellerSignUp"
             android:exported="false" />
         <activity
-            android:name=".activity.CheckoutActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".activity.ForgotPasswordActivity"
             android:exported="false"
             android:screenOrientation="portrait" />

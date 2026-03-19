@@ -78,6 +78,7 @@ dependencies {
     implementation libs.android.activation
 
     implementation libs.payhere.android.sdk
-    implementation libs.appcompat.v160
+    implementation libs.appcompat
     implementation libs.gson
+    implementation libs.mpandroidchart
 }
