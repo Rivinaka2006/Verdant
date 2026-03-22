@@ -91,6 +91,14 @@ public class SignIn extends AppCompatActivity {
         db.collection("users").document(user.getUid()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        String status = documentSnapshot.getString("status");
+                        if ("Deactive".equalsIgnoreCase(status) || "Deactivated".equalsIgnoreCase(status)) {
+                            mAuth.signOut();
+                            binding.btnSignIn.setEnabled(true);
+                            Toast.makeText(SignIn.this, "Your account is deactivated. Please contact support.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
                         String role = documentSnapshot.getString("role");
                         if ("customer".equals(role)) {
                             Intent intent = new Intent(SignIn.this, MainHome.class);

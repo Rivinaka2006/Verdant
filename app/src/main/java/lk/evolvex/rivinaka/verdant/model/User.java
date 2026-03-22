@@ -13,31 +13,20 @@ import lombok.NoArgsConstructor;
 public class User {
 
     private String userId;
-
     private String fullName;
-
     private String email;
-
     private String phone;
-
     private String role;
-
     private String profileImageUrl;
-
     private String address;
-
     private Address billing;
-
     private Address shipping;
-
     private Boolean sameAsBilling;
-
     private String defaultAddressId;
-
     private String fcmToken;
-
     private Boolean biometricEnabled;
-
+    @Builder.Default
+    private String status = "Active";
     private Timestamp createdAt;
 
 }

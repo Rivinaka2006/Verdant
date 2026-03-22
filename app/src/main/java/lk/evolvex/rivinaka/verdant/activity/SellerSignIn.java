@@ -79,6 +79,16 @@ public class SellerSignIn extends AppCompatActivity {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        String status = documentSnapshot.getString("status");
+                        
+                        // Using case-insensitive comparison for "Deactive" and "Deactivated"
+                        if (status != null && (status.equalsIgnoreCase("Deactive") || status.equalsIgnoreCase("Deactivated"))) {
+                            mAuth.signOut();
+                            btnSignIn.setEnabled(true);
+                            Toast.makeText(this, "Your account is deactivated. Please contact support.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
                         String role = documentSnapshot.getString("role");
                         if ("seller".equals(role)) {
                             startActivity(new Intent(SellerSignIn.this, SellerMainHome.class));
@@ -88,6 +98,10 @@ public class SellerSignIn extends AppCompatActivity {
                             btnSignIn.setEnabled(true);
                             Toast.makeText(this, "Not a seller account", Toast.LENGTH_SHORT).show();
                         }
+                    } else {
+                        mAuth.signOut();
+                        btnSignIn.setEnabled(true);
+                        Toast.makeText(this, "User profile not found", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {

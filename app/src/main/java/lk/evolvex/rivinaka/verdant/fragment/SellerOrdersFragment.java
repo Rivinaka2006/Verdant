@@ -20,7 +20,7 @@ public class SellerOrdersFragment extends Fragment {
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
-    private final String[] statuses = {"Pending", "Processing", "Shipped", "Delivered", "Cancelled"};
+    private final String[] statuses = {"Pending", "Processing", "Shipped", "DELIVERED", "Cancelled"};
 
     @Nullable
     @Override

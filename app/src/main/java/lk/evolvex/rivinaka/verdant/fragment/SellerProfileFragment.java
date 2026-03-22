@@ -23,6 +23,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.SellerSignIn;
@@ -112,17 +116,48 @@ public class SellerProfileFragment extends Fragment {
             String number = etAccountNumber.getText().toString().trim();
             String bankBranch = etBankBranch.getText().toString().trim();
 
-            if (name.isEmpty() || number.isEmpty() || bankBranch.isEmpty() || proofImageUri == null) {
-                Toast.makeText(getContext(), "Please fill all fields and provide proof", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty() || number.isEmpty() || bankBranch.isEmpty()) {
+                Toast.makeText(getContext(), "Please fill all bank details", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Logic to save/upload data would go here
-            Toast.makeText(getContext(), "Bank details submitted for verification", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
+            updateBankDetailsInFirestore(name, number, bankBranch, dialog);
         });
 
         dialog.show();
+    }
+
+    private void updateBankDetailsInFirestore(String name, String number, String bankBranch, BottomSheetDialog dialog) {
+        if (mAuth.getCurrentUser() == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
+
+        Map<String, Object> bankData = new HashMap<>();
+        bankData.put("bankAccountName", name);
+        bankData.put("bankAccountNumber", number);
+        bankData.put("bankNameBranch", bankBranch);
+        bankData.put("bankProofUrl", null); // As requested, image field is null for now
+
+        // Find the nursery document for this user and update it
+        db.collection("nurseries").whereEqualTo("ownerId", userId).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        String docId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        db.collection("nurseries").document(docId)
+                                .set(bankData, SetOptions.merge())
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(getContext(), "Bank details updated successfully", Toast.LENGTH_SHORT).show();
+                                    tvAccountHolder.setText(name);
+                                    tvAccountNumber.setText(number);
+                                    dialog.dismiss();
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    } else {
+                        // If no nursery found, create one or handle accordingly. 
+                        // Typically sellers should already have a nursery document.
+                        Toast.makeText(getContext(), "Nursery profile not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void loadSellerData() {

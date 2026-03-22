@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -44,12 +45,21 @@ public class MainActivity extends AppCompatActivity {
     private void checkUserAuth() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
-            // User is signed in, fetch role from Firestore
+            // User is signed in, fetch status and role from Firestore
             FirebaseFirestore.getInstance().collection("users")
                     .document(currentUser.getUid())
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
+                            String status = documentSnapshot.getString("status");
+                            if ("Deactive".equalsIgnoreCase(status) || "Deactivated".equalsIgnoreCase(status)) {
+                                FirebaseAuth.getInstance().signOut();
+                                Toast.makeText(MainActivity.this, "Your account is deactivated. Please contact support.", Toast.LENGTH_LONG).show();
+                                startActivity(new Intent(MainActivity.this, Welcome.class));
+                                finish();
+                                return;
+                            }
+
                             String role = documentSnapshot.getString("role");
                             if ("seller".equals(role)) {
                                 startActivity(new Intent(MainActivity.this, SellerMainHome.class));
