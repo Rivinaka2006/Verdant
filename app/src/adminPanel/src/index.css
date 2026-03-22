@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@theme {
+  --color-verdant-900: #0a1f08;
+  --color-verdant-800: #1a3a15;
+  --color-verdant-700: #2D5A27;
+  --color-verdant-600: #3d7a34;
+  --color-verdant-500: #4d9a41;
+  --color-verdant-400: #6bb85e;
+  --color-verdant-300: #98FF98;
+  --color-verdant-200: #b8ffb8;
+  --color-verdant-100: #d8ffd8;
+
+  --color-dark-950: #080808;
+  --color-dark-900: #121212;
+  --color-dark-800: #1a1a1a;
+  --color-dark-700: #222222;
+  --color-dark-600: #2a2a2a;
+  --color-dark-500: #333333;
+  --color-dark-400: #444444;
+  --color-dark-300: #666666;
+  --color-dark-200: #888888;
+  --color-dark-100: #aaaaaa;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2D5A27 #1a1a1a;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #2D5A27;
+  border-radius: 3px;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: #080808;
+  color: #e0e0e0;
+  overflow-x: hidden;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.03) 50%, 
+    rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.4s ease-out forwards;
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(20, 20, 20, 0.6));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(45, 90, 39, 0.4);
+  box-shadow: 0 4px 32px rgba(45, 90, 39, 0.1);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px rgba(45, 90, 39, 0.3), 0 0 60px rgba(45, 90, 39, 0.1);
+}
+
+.map-grid {
+  background-image:
+    linear-gradient(rgba(45, 90, 39, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 90, 39, 0.08) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.drag-zone {
+  border: 2px dashed rgba(45, 90, 39, 0.4);
+  transition: all 0.3s ease;
+}
+
+.drag-zone:hover,
+.drag-zone.active {
+  border-color: #98FF98;
+  background: rgba(45, 90, 39, 0.1);
+}
