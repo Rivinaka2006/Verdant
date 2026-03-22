@@ -82,4 +82,10 @@ dependencies {
     implementation libs.appcompat
     implementation libs.gson
     implementation libs.mpandroidchart
+    
+    // Google Play Services for Location
+    implementation libs.play.services.location
+
+    // Biometric
+    implementation libs.biometric
 }

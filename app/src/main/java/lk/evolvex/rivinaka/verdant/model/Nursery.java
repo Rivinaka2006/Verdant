@@ -27,4 +27,11 @@ public class Nursery {
     private Timestamp time;
     private Timestamp createdAt;
 
+    // Bank Details
+    private String bankAccountName;
+    private String bankAccountNumber;
+    private String bankNameBranch;
+    private String bankProofUrl;
+    private boolean isBankVerified;
+
 }

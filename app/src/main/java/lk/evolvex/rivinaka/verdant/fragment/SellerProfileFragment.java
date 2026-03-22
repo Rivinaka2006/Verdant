@@ -1,7 +1,11 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,32 +19,55 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.SellerSignIn;
 
 public class SellerProfileFragment extends Fragment {
 
-    private TextView tvBusinessName, tvLocation, tvContact, tvAccountHolder, tvAccountNumber;
+    private TextView tvBusinessName, tvLocation, tvContact, tvAccountHolder, tvAccountNumber, tvCoordinates;
     private ImageView ivSellerProfile;
-    private MaterialButton btnLogout, btnUpdateBankDetails;
+    private MaterialButton btnLogout, btnUpdateBankDetails, btnUpdateLocation;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
+    private FusedLocationProviderClient fusedLocationClient;
 
     private Uri proofImageUri;
     private ImageView ivDialogProofPreview;
+
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            result -> {
+                Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
+                Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
+                if (fineLocationGranted != null && fineLocationGranted) {
+                    getCurrentLocation();
+                } else if (coarseLocationGranted != null && coarseLocationGranted) {
+                    getCurrentLocation();
+                } else {
+                    Toast.makeText(getContext(), "Location permission denied", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
 
     private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -68,19 +95,24 @@ public class SellerProfileFragment extends Fragment {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
         tvBusinessName = view.findViewById(R.id.tvBusinessName);
         tvLocation = view.findViewById(R.id.tvLocation);
+        tvCoordinates = view.findViewById(R.id.tvCoordinates);
         tvContact = view.findViewById(R.id.tvContact);
         tvAccountHolder = view.findViewById(R.id.tvAccountHolder);
         tvAccountNumber = view.findViewById(R.id.tvAccountNumber);
         ivSellerProfile = view.findViewById(R.id.ivSellerProfile);
         btnLogout = view.findViewById(R.id.btnLogout);
         btnUpdateBankDetails = view.findViewById(R.id.btnUpdateBankDetails);
+        btnUpdateLocation = view.findViewById(R.id.btnUpdateLocation);
 
         loadSellerData();
 
         btnUpdateBankDetails.setOnClickListener(v -> showUpdateBankDetailsDialog());
+        btnUpdateLocation.setOnClickListener(v -> checkLocationPermission());
 
         btnLogout.setOnClickListener(v -> {
             mAuth.signOut();
@@ -91,6 +123,79 @@ public class SellerProfileFragment extends Fragment {
                 getActivity().finish();
             }
         });
+    }
+
+    private void checkLocationPermission() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            getCurrentLocation();
+        } else {
+            locationPermissionLauncher.launch(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+    }
+
+    private void getCurrentLocation() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Getting current location...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(requireActivity(), location -> {
+                    if (location != null) {
+                        updateNurseryLocation(location.getLatitude(), location.getLongitude(), progressDialog);
+                    } else {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Could not get location. Make sure GPS is on.", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void updateNurseryLocation(double latitude, double longitude, ProgressDialog progressDialog) {
+        if (mAuth.getCurrentUser() == null) {
+            progressDialog.dismiss();
+            return;
+        }
+        String userId = mAuth.getCurrentUser().getUid();
+
+        Map<String, Object> locationData = new HashMap<>();
+        locationData.put("latitude", latitude);
+        locationData.put("longitude", longitude);
+
+        db.collection("nurseries").whereEqualTo("ownerId", userId).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        String docId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        db.collection("nurseries").document(docId)
+                                .update(locationData)
+                                .addOnSuccessListener(aVoid -> {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getContext(), "Location updated successfully", Toast.LENGTH_SHORT).show();
+                                    tvCoordinates.setText(String.format("Lat: %.6f, Lon: %.6f", latitude, longitude));
+                                })
+                                .addOnFailureListener(e -> {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getContext(), "Failed to update location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        progressDialog.dismiss();
+                        Toast.makeText(getContext(), "Nursery profile not found", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void showUpdateBankDetailsDialog() {
@@ -104,6 +209,8 @@ public class SellerProfileFragment extends Fragment {
         ivDialogProofPreview = dialogView.findViewById(R.id.ivProofPreview);
         View btnSelectProof = dialogView.findViewById(R.id.btnSelectProof);
         MaterialButton btnSubmit = dialogView.findViewById(R.id.btnSubmitBankDetails);
+
+        proofImageUri = null; // Reset for new entry
 
         btnSelectProof.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
@@ -121,23 +228,50 @@ public class SellerProfileFragment extends Fragment {
                 return;
             }
 
-            updateBankDetailsInFirestore(name, number, bankBranch, dialog);
+            if (proofImageUri == null) {
+                Toast.makeText(getContext(), "Please upload bank slip/e-statement proof", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            uploadProofAndSubmit(name, number, bankBranch, dialog);
         });
 
         dialog.show();
     }
 
-    private void updateBankDetailsInFirestore(String name, String number, String bankBranch, BottomSheetDialog dialog) {
-        if (mAuth.getCurrentUser() == null) return;
+    private void uploadProofAndSubmit(String name, String number, String bankBranch, BottomSheetDialog dialog) {
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Uploading bank details...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        String fileName = "bank_proofs/" + UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(fileName);
+
+        ref.putFile(proofImageUri)
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    updateBankDetailsInFirestore(name, number, bankBranch, uri.toString(), dialog, progressDialog);
+                }))
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void updateBankDetailsInFirestore(String name, String number, String bankBranch, String proofUrl, BottomSheetDialog dialog, ProgressDialog progressDialog) {
+        if (mAuth.getCurrentUser() == null) {
+            progressDialog.dismiss();
+            return;
+        }
         String userId = mAuth.getCurrentUser().getUid();
 
         Map<String, Object> bankData = new HashMap<>();
         bankData.put("bankAccountName", name);
         bankData.put("bankAccountNumber", number);
         bankData.put("bankNameBranch", bankBranch);
-        bankData.put("bankProofUrl", null); // As requested, image field is null for now
+        bankData.put("bankProofUrl", proofUrl);
+        bankData.put("bankVerified", false);
 
-        // Find the nursery document for this user and update it
         db.collection("nurseries").whereEqualTo("ownerId", userId).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
@@ -145,19 +279,25 @@ public class SellerProfileFragment extends Fragment {
                         db.collection("nurseries").document(docId)
                                 .set(bankData, SetOptions.merge())
                                 .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(getContext(), "Bank details updated successfully", Toast.LENGTH_SHORT).show();
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getContext(), "Bank details submitted for verification", Toast.LENGTH_SHORT).show();
                                     tvAccountHolder.setText(name);
                                     tvAccountNumber.setText(number);
                                     dialog.dismiss();
                                 })
-                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                                .addOnFailureListener(e -> {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getContext(), "Failed to update: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
                     } else {
-                        // If no nursery found, create one or handle accordingly. 
-                        // Typically sellers should already have a nursery document.
+                        progressDialog.dismiss();
                         Toast.makeText(getContext(), "Nursery profile not found", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void loadSellerData() {
@@ -165,7 +305,6 @@ public class SellerProfileFragment extends Fragment {
 
         String userId = mAuth.getCurrentUser().getUid();
 
-        // First, load basic user data (like address) which is always in the user document
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(userDoc -> {
                     if (userDoc.exists()) {
@@ -176,23 +315,27 @@ public class SellerProfileFragment extends Fragment {
                     }
                 });
 
-        // Then, try to get nursery data where ownerId matches current user for branding
         db.collection("nurseries").whereEqualTo("ownerId", userId).get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     if (!queryDocumentSnapshots.isEmpty()) {
-                        // If nursery document exists, use its data (including bannerImageUrl)
                         com.google.firebase.firestore.DocumentSnapshot nurseryDoc = queryDocumentSnapshots.getDocuments().get(0);
                         String name = nurseryDoc.getString("nurseryName");
                         String phone = nurseryDoc.getString("phoneNumber");
                         String bannerImageUrl = nurseryDoc.getString("bannerImageUrl");
                         
-                        // Load bank details if they exist in the nursery doc
+                        Double lat = nurseryDoc.getDouble("latitude");
+                        Double lon = nurseryDoc.getDouble("longitude");
+                        
                         String accHolder = nurseryDoc.getString("bankAccountName");
                         String accNumber = nurseryDoc.getString("bankAccountNumber");
 
                         tvBusinessName.setText(name != null ? name : "N/A");
                         tvContact.setText(phone != null ? phone : "N/A");
                         
+                        if (lat != null && lon != null) {
+                            tvCoordinates.setText(String.format("Lat: %.6f, Lon: %.6f", lat, lon));
+                        }
+
                         if (accHolder != null) tvAccountHolder.setText(accHolder);
                         if (accNumber != null) tvAccountNumber.setText(accNumber);
 
@@ -205,7 +348,6 @@ public class SellerProfileFragment extends Fragment {
                                     .into(ivSellerProfile);
                         }
                     } else {
-                        // Fallback to user document for everything if no nursery document is found
                         loadUserDataFallback(userId);
                     }
                 })

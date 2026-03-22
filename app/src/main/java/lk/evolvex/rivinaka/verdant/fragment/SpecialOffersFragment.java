@@ -95,15 +95,4 @@ public class SpecialOffersFragment extends Fragment implements SpecialOfferAdapt
                 .addToBackStack(null)
                 .commit();
     }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        // Restore visibility
-        if (getActivity() instanceof MainHome) {
-            MainHome mainHome = (MainHome) getActivity();
-            mainHome.setHeaderVisibility(View.VISIBLE);
-            mainHome.setBottomNavVisibility(View.VISIBLE);
-        }
-    }
 }

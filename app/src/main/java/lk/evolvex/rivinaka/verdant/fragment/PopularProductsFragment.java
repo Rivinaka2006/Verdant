@@ -146,14 +146,4 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
             Toast.makeText(getContext(), "Failed to access cart", Toast.LENGTH_SHORT).show();
         });
     }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (getActivity() instanceof MainHome) {
-            MainHome mainHome = (MainHome) getActivity();
-            mainHome.setHeaderVisibility(View.VISIBLE);
-            mainHome.setBottomNavVisibility(View.VISIBLE);
-        }
-    }
 }

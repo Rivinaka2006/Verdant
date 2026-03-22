@@ -309,13 +309,4 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         });
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (getActivity() instanceof MainHome) {
-            MainHome mainHome = (MainHome) getActivity();
-            mainHome.setHeaderVisibility(View.VISIBLE);
-            mainHome.setBottomNavVisibility(View.VISIBLE);
-        }
-    }
 }
