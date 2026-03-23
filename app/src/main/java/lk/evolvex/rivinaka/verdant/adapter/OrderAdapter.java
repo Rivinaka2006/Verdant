@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     public interface OnOrderClickListener {
         void onTrackOrder(Order order);
         void onCancelOrder(Order order);
+        void onRateProduct(CartItem item);
     }
 
     public OrderAdapter(List<Order> orders, OnOrderClickListener listener) {
@@ -62,6 +64,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 TextView tvProductName = itemView.findViewById(R.id.tvProductName);
                 TextView tvQuantity = itemView.findViewById(R.id.tvQuantity);
                 TextView tvItemPrice = itemView.findViewById(R.id.tvPrice);
+                MaterialButton btnRateProduct = itemView.findViewById(R.id.btnRateProduct);
 
                 tvProductName.setText(item.getProductName());
                 tvQuantity.setText("Qty = " + item.getQuantity());
@@ -72,23 +75,34 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         .placeholder(R.drawable.plant)
                         .into(ivProduct);
 
+                // Show Rate button only if order is delivered
+                if ("Delivered".equalsIgnoreCase(order.getStatus()) || "Completed".equalsIgnoreCase(order.getStatus())) {
+                    btnRateProduct.setVisibility(View.VISIBLE);
+                    btnRateProduct.setOnClickListener(v -> {
+                        if (listener != null) listener.onRateProduct(item);
+                    });
+                } else {
+                    btnRateProduct.setVisibility(View.GONE);
+                }
+
                 holder.llOrderItemsContainer.addView(itemView);
             }
         }
 
-        // Status styling
+        // Status styling and bottom buttons
         if ("Cancelled".equalsIgnoreCase(order.getStatus())) {
             holder.tvStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), android.R.color.holo_red_dark));
             holder.btnActionLeft.setVisibility(View.GONE);
-            holder.btnActionRight.setText("Re-order");
-        } else if ("Delivered".equalsIgnoreCase(order.getStatus())) {
+            holder.btnActionRight.setVisibility(View.GONE); // Requirement: remove Re-order
+        } else if ("Delivered".equalsIgnoreCase(order.getStatus()) || "Completed".equalsIgnoreCase(order.getStatus())) {
             holder.tvStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.app_green));
-            holder.btnActionLeft.setText("Leave Review");
-            holder.btnActionRight.setText("Re-order");
+            holder.btnActionLeft.setVisibility(View.GONE); // Per requirement, we rate individual products now
+            holder.btnActionRight.setVisibility(View.GONE); // Requirement: remove Re-order
         } else {
             holder.tvStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.app_green));
             holder.btnActionLeft.setVisibility(View.VISIBLE);
             holder.btnActionLeft.setText("Cancel Order");
+            holder.btnActionRight.setVisibility(View.VISIBLE);
             holder.btnActionRight.setText("Track Order");
         }
 

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
+import java.util.Locale;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.model.Product;
@@ -64,9 +65,13 @@ public class SpecialOfferAdapter extends RecyclerView.Adapter<SpecialOfferAdapte
 
         public void bind(Product product, OnProductClickListener listener) {
             tvProductName.setText(product.getName());
-            tvPrice.setText("Rs. " + product.getPrice());
-            tvOldPrice.setText("Rs. " + product.getOldPrice());
-            tvRating.setText(String.valueOf(product.getRating()));
+            tvPrice.setText(String.format("Rs. %.2f", product.getPrice()));
+            tvOldPrice.setText(String.format("Rs. %.2f", product.getOldPrice()));
+            
+            // Display average rating and total ratings count: e.g. "4.8 (150)"
+            tvRating.setText(String.format(Locale.getDefault(), "%.1f (%d)", 
+                    product.getRating(), product.getRatingCount()));
+            
             tvSold.setText("Sold " + product.getSoldCount());
 
             if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {

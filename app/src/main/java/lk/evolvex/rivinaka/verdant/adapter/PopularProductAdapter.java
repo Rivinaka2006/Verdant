@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.List;
+import java.util.Locale;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.model.Product;
@@ -65,8 +66,12 @@ public class PopularProductAdapter extends RecyclerView.Adapter<PopularProductAd
 
         public void bind(Product product, OnProductClickListener listener) {
             tvProductName.setText(product.getName());
-            tvPrice.setText("Rs. " + product.getPrice());
-            tvRatingAndSold.setText(product.getRating() + " (" + product.getSoldCount() + " sold)");
+            tvPrice.setText(String.format("Rs. %.2f", product.getPrice()));
+            
+            // Format rating and count: e.g., "4.5 (120 reviews)"
+            String ratingText = String.format(Locale.getDefault(), "%.1f (%d reviews)", 
+                    product.getRating(), product.getRatingCount());
+            tvRatingAndSold.setText(ratingText);
 
             if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
                 Glide.with(itemView.getContext())

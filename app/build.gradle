@@ -88,4 +88,7 @@ dependencies {
 
     // Biometric
     implementation libs.biometric
+
+    // Google Play Services for Auth
+    implementation libs.play.services.auth
 }

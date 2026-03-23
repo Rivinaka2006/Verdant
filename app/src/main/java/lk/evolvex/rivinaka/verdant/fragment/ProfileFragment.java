@@ -1,6 +1,9 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -21,9 +26,12 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.SetFingerPrint;
@@ -42,9 +50,22 @@ public class ProfileFragment extends Fragment {
     private MaterialButton btnSave;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private FirebaseStorage storage;
 
     private boolean isBillingExpanded = false;
     private boolean isShippingExpanded = false;
+
+    private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) {
+                        uploadProfileImage(imageUri);
+                    }
+                }
+            }
+    );
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -58,6 +79,7 @@ public class ProfileFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        storage = FirebaseStorage.getInstance();
 
         initViews(view);
         setupExpandableSections();
@@ -66,6 +88,12 @@ public class ProfileFragment extends Fragment {
         loadUserProfile();
 
         btnSave.setOnClickListener(v -> saveUserProfile());
+        
+        ivProfileImage.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            pickImageLauncher.launch(intent);
+        });
     }
 
     private void initViews(View view) {
@@ -115,6 +143,43 @@ public class ProfileFragment extends Fragment {
         btnSave = view.findViewById(R.id.btnSave);
     }
 
+    private void uploadProfileImage(Uri imageUri) {
+        if (mAuth.getCurrentUser() == null) return;
+
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Uploading profile image...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        String fileName = "profile_images/" + mAuth.getCurrentUser().getUid() + "_" + UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(fileName);
+
+        ref.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String downloadUrl = uri.toString();
+                    db.collection("users").document(mAuth.getCurrentUser().getUid())
+                            .update("profileImageUrl", downloadUrl)
+                            .addOnSuccessListener(aVoid -> {
+                                progressDialog.dismiss();
+                                Glide.with(this)
+                                        .load(downloadUrl)
+                                        .placeholder(R.drawable.person_icon)
+                                        .circleCrop()
+                                        .into(ivProfileImage);
+                                ivProfileImage.setImageTintList(null); // Remove tint once image is loaded
+                                Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                progressDialog.dismiss();
+                                Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
+                            });
+                }))
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
     private void setupExpandableSections() {
         llBillingHeader.setOnClickListener(v -> {
             isBillingExpanded = !isBillingExpanded;
@@ -149,11 +214,30 @@ public class ProfileFragment extends Fragment {
 
     private void setupBiometricLogic() {
         swBiometric.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked && buttonView.isPressed()) {
-                Intent intent = new Intent(getContext(), SetFingerPrint.class);
-                startActivity(intent);
+            if (buttonView.isPressed()) {
+                if (isChecked) {
+                    Intent intent = new Intent(getContext(), SetFingerPrint.class);
+                    startActivity(intent);
+                } else {
+                    updateBiometricState(false);
+                }
             }
         });
+    }
+
+    private void updateBiometricState(boolean enabled) {
+        if (mAuth.getCurrentUser() == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(userId)
+                .update("biometricEnabled", enabled)
+                .addOnSuccessListener(aVoid -> {
+                    String status = enabled ? "enabled" : "disabled";
+                    Toast.makeText(getContext(), "Biometric verification " + status, Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    swBiometric.setChecked(!enabled); // Revert switch
+                    Toast.makeText(getContext(), "Failed to update biometric state", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void loadUserProfile() {
@@ -163,52 +247,53 @@ public class ProfileFragment extends Fragment {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        User user = documentSnapshot.toObject(User.class);
-                        if (user != null) {
-                            // Load Profile Image
-                            if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-                                Glide.with(this)
-                                        .load(user.getProfileImageUrl())
-                                        .placeholder(R.drawable.person_icon)
-                                        .into(ivProfileImage);
-                                ivProfileImage.setImageTintList(null);
-                            }
+                        // General Info
+                        etFullName.setText(documentSnapshot.getString("fullName"));
+                        etEmail.setText(documentSnapshot.getString("email"));
+                        etPhone.setText(documentSnapshot.getString("phone"));
+                        etAddress.setText(documentSnapshot.getString("address"));
 
-                            // General Info
-                            etFullName.setText(user.getFullName());
-                            etEmail.setText(user.getEmail());
-                            etPhone.setText(user.getPhone());
-                            etAddress.setText(user.getAddress());
+                        // Profile Image
+                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Glide.with(this)
+                                    .load(profileImageUrl)
+                                    .placeholder(R.drawable.person_icon)
+                                    .circleCrop()
+                                    .into(ivProfileImage);
+                            ivProfileImage.setImageTintList(null); // Crucial: Remove the placeholder tint
+                        }
 
-                            // Biometric state
-                            swBiometric.setChecked(user.getBiometricEnabled() != null && user.getBiometricEnabled());
+                        // Biometric state
+                        Boolean biometricEnabled = documentSnapshot.getBoolean("biometricEnabled");
+                        swBiometric.setChecked(biometricEnabled != null && biometricEnabled);
 
-                            // Load Billing Info
-                            Address billing = user.getBilling();
-                            if (billing != null) {
-                                etBillingFirstName.setText(billing.getFirstName());
-                                etBillingLastName.setText(billing.getLastName());
-                                etBillingEmail.setText(billing.getEmail());
-                                etBillingPhone.setText(billing.getPhone());
-                                etBillingAddress.setText(billing.getAddress());
-                                etBillingCity.setText(billing.getCity());
-                                etBillingPostalCode.setText(billing.getPostalCode());
-                            }
+                        // Load Billing Info (Map approach if model is strict)
+                        Map<String, Object> billing = (Map<String, Object>) documentSnapshot.get("billing");
+                        if (billing != null) {
+                            etBillingFirstName.setText((String) billing.get("firstName"));
+                            etBillingLastName.setText((String) billing.get("lastName"));
+                            etBillingEmail.setText((String) billing.get("email"));
+                            etBillingPhone.setText((String) billing.get("phone"));
+                            etBillingAddress.setText((String) billing.get("address"));
+                            etBillingCity.setText((String) billing.get("city"));
+                            etBillingPostalCode.setText((String) billing.get("postalCode"));
+                        }
 
-                            // Load Checkbox state
-                            cbSameAsBilling.setChecked(user.getSameAsBilling() != null && user.getSameAsBilling());
+                        // Load Checkbox state
+                        Boolean sameAsBilling = documentSnapshot.getBoolean("sameAsBilling");
+                        cbSameAsBilling.setChecked(sameAsBilling != null && sameAsBilling);
 
-                            // Load Shipping Info
-                            Address shipping = user.getShipping();
-                            if (shipping != null) {
-                                etShippingFirstName.setText(shipping.getFirstName());
-                                etShippingLastName.setText(shipping.getLastName());
-                                etShippingEmail.setText(shipping.getEmail());
-                                etShippingPhone.setText(shipping.getPhone());
-                                etShippingAddress.setText(shipping.getAddress());
-                                etShippingCity.setText(shipping.getCity());
-                                etShippingPostalCode.setText(shipping.getPostalCode());
-                            }
+                        // Load Shipping Info
+                        Map<String, Object> shipping = (Map<String, Object>) documentSnapshot.get("shipping");
+                        if (shipping != null) {
+                            etShippingFirstName.setText((String) shipping.get("firstName"));
+                            etShippingLastName.setText((String) shipping.get("lastName"));
+                            etShippingEmail.setText((String) shipping.get("email"));
+                            etShippingPhone.setText((String) shipping.get("phone"));
+                            etShippingAddress.setText((String) shipping.get("address"));
+                            etShippingCity.setText((String) shipping.get("city"));
+                            etShippingPostalCode.setText((String) shipping.get("postalCode"));
                         }
                     }
                 })

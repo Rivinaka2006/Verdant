@@ -190,6 +190,7 @@
 
         <!-- Facebook -->
         <ImageView
+            android:id="@+id/btnFacebook"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginEnd="16dp"
@@ -199,6 +200,7 @@
 
         <!-- Google -->
         <ImageView
+            android:id="@+id/btnGoogle"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginEnd="16dp"
@@ -208,6 +210,7 @@
 
         <!-- Apple -->
         <ImageView
+            android:id="@+id/btnApple"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/bg_social_btn"

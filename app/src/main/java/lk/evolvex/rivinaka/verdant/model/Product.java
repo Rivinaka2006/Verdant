@@ -28,6 +28,7 @@ public class Product {
     private String waterFrequency;
     private String careInstructions;
     private double rating;
+    private int ratingCount;
     private int soldCount;
     private Timestamp createdAt;
 

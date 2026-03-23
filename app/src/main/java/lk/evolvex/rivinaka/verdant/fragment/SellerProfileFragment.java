@@ -27,6 +27,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -40,12 +41,14 @@ import java.util.UUID;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.SellerSignIn;
+import lk.evolvex.rivinaka.verdant.activity.SetFingerPrint;
 
 public class SellerProfileFragment extends Fragment {
 
     private TextView tvBusinessName, tvLocation, tvContact, tvAccountHolder, tvAccountNumber, tvCoordinates;
     private ImageView ivSellerProfile;
     private MaterialButton btnLogout, btnUpdateBankDetails, btnUpdateLocation;
+    private SwitchMaterial swBiometric;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseStorage storage;
@@ -83,6 +86,18 @@ public class SellerProfileFragment extends Fragment {
             }
     );
 
+    private final ActivityResultLauncher<Intent> pickProfileImageLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    if (imageUri != null) {
+                        uploadProfileImage(imageUri);
+                    }
+                }
+            }
+    );
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -108,11 +123,19 @@ public class SellerProfileFragment extends Fragment {
         btnLogout = view.findViewById(R.id.btnLogout);
         btnUpdateBankDetails = view.findViewById(R.id.btnUpdateBankDetails);
         btnUpdateLocation = view.findViewById(R.id.btnUpdateLocation);
+        swBiometric = view.findViewById(R.id.swBiometric);
 
         loadSellerData();
+        setupBiometricLogic();
 
         btnUpdateBankDetails.setOnClickListener(v -> showUpdateBankDetailsDialog());
         btnUpdateLocation.setOnClickListener(v -> checkLocationPermission());
+
+        ivSellerProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            pickProfileImageLauncher.launch(intent);
+        });
 
         btnLogout.setOnClickListener(v -> {
             mAuth.signOut();
@@ -123,6 +146,66 @@ public class SellerProfileFragment extends Fragment {
                 getActivity().finish();
             }
         });
+    }
+
+    private void uploadProfileImage(Uri imageUri) {
+        if (mAuth.getCurrentUser() == null) return;
+
+        ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Updating profile image...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+
+        String fileName = "profile_images/" + mAuth.getCurrentUser().getUid() + "_" + UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(fileName);
+
+        ref.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
+                    String downloadUrl = uri.toString();
+                    db.collection("users").document(mAuth.getCurrentUser().getUid())
+                            .update("profileImageUrl", downloadUrl)
+                            .addOnSuccessListener(aVoid -> {
+                                progressDialog.dismiss();
+                                Glide.with(this).load(downloadUrl).circleCrop().into(ivSellerProfile);
+                                Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> {
+                                progressDialog.dismiss();
+                                Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
+                            });
+                }))
+                .addOnFailureListener(e -> {
+                    progressDialog.dismiss();
+                    Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void setupBiometricLogic() {
+        swBiometric.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (buttonView.isPressed()) {
+                if (isChecked) {
+                    Intent intent = new Intent(getContext(), SetFingerPrint.class);
+                    startActivity(intent);
+                } else {
+                    updateBiometricState(false);
+                }
+            }
+        });
+    }
+
+    private void updateBiometricState(boolean enabled) {
+        if (mAuth.getCurrentUser() == null) return;
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(userId)
+                .update("biometricEnabled", enabled)
+                .addOnSuccessListener(aVoid -> {
+                    String status = enabled ? "enabled" : "disabled";
+                    Toast.makeText(getContext(), "Biometric verification " + status, Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    swBiometric.setChecked(!enabled); // Revert switch
+                    Toast.makeText(getContext(), "Failed to update biometric state", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void checkLocationPermission() {
@@ -312,6 +395,20 @@ public class SellerProfileFragment extends Fragment {
                         if (address != null && !address.isEmpty()) {
                             tvLocation.setText(address);
                         }
+                        
+                        // Load biometric state
+                        Boolean biometricEnabled = userDoc.getBoolean("biometricEnabled");
+                        swBiometric.setChecked(biometricEnabled != null && biometricEnabled);
+
+                        // Load profile image
+                        String profileImageUrl = userDoc.getString("profileImageUrl");
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Glide.with(this)
+                                    .load(profileImageUrl)
+                                    .placeholder(R.drawable.person_icon)
+                                    .circleCrop()
+                                    .into(ivSellerProfile);
+                        }
                     }
                 });
 
@@ -321,7 +418,6 @@ public class SellerProfileFragment extends Fragment {
                         com.google.firebase.firestore.DocumentSnapshot nurseryDoc = queryDocumentSnapshots.getDocuments().get(0);
                         String name = nurseryDoc.getString("nurseryName");
                         String phone = nurseryDoc.getString("phoneNumber");
-                        String bannerImageUrl = nurseryDoc.getString("bannerImageUrl");
                         
                         Double lat = nurseryDoc.getDouble("latitude");
                         Double lon = nurseryDoc.getDouble("longitude");
@@ -338,15 +434,6 @@ public class SellerProfileFragment extends Fragment {
 
                         if (accHolder != null) tvAccountHolder.setText(accHolder);
                         if (accNumber != null) tvAccountNumber.setText(accNumber);
-
-                        if (bannerImageUrl != null && !bannerImageUrl.isEmpty()) {
-                            Glide.with(this)
-                                    .load(bannerImageUrl)
-                                    .placeholder(R.drawable.person_icon)
-                                    .error(R.drawable.person_icon)
-                                    .circleCrop()
-                                    .into(ivSellerProfile);
-                        }
                     } else {
                         loadUserDataFallback(userId);
                     }
@@ -360,7 +447,7 @@ public class SellerProfileFragment extends Fragment {
                     if (documentSnapshot.exists()) {
                         String name = documentSnapshot.getString("fullName");
                         String phone = documentSnapshot.getString("phone");
-                        String profileImage = documentSnapshot.getString("profileImage");
+                        String profileImage = documentSnapshot.getString("profileImageUrl");
                         String address = documentSnapshot.getString("address");
 
                         tvBusinessName.setText(name != null ? name : "N/A");

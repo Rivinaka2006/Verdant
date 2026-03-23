@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
+    android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <!-- Item Image -->
@@ -16,18 +17,19 @@
 
         <ImageView
             android:id="@+id/ivProduct"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:scaleType="centerInside"
+            android:scaleType="centerCrop"
             android:src="@drawable/plant" />
     </androidx.cardview.widget.CardView>
 
     <!-- Item Details -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
@@ -35,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Product Name"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -45,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:text="Qty = 1"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/grey_text"
             android:textSize="13sp" />
 
         <TextView
@@ -58,4 +60,17 @@
             android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <!-- Rate Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnRateProduct"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rate"
+        android:textColor="@color/app_green"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:rippleColor="@color/app_green" />
+
 </LinearLayout>

@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                             if ("Deactive".equalsIgnoreCase(status) || "Deactivated".equalsIgnoreCase(status)) {
                                 mAuth.signOut();
                                 Toast.makeText(MainActivity.this, "Your account is deactivated. Please contact support.", Toast.LENGTH_LONG).show();
-                                navigateToWelcome();
+                                navigateToSignIn(null);
                                 return;
                             }
 
@@ -76,12 +76,12 @@ public class MainActivity extends AppCompatActivity {
                                 navigateBasedOnRole(documentSnapshot.getString("role"));
                             }
                         } else {
-                            navigateToWelcome();
+                            navigateToSignIn(null);
                         }
                     })
-                    .addOnFailureListener(e -> navigateToWelcome());
+                    .addOnFailureListener(e -> navigateToSignIn(null));
         } else {
-            navigateToWelcome();
+            navigateToSignIn(null);
         }
     }
 
@@ -93,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
                     super.onAuthenticationError(errorCode, errString);
-                    Toast.makeText(MainActivity.this, "Authentication error: " + errString, Toast.LENGTH_SHORT).show();
+                    // If user cancels or too many attempts/error happens, redirect to Sign In
                     mAuth.signOut();
-                    navigateToWelcome();
+                    navigateToSignIn(role);
                 }
 
                 @Override
@@ -107,14 +107,18 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onAuthenticationFailed() {
                     super.onAuthenticationFailed();
+                    // This is triggered for every mismatch (e.g. wrong finger)
+                    // Per requirement: "if the user fails the biometric verification they must redirect directly to the signin screen"
                     Toast.makeText(MainActivity.this, "Authentication failed", Toast.LENGTH_SHORT).show();
+                    mAuth.signOut();
+                    navigateToSignIn(role);
                 }
             });
 
             promptInfo = new BiometricPrompt.PromptInfo.Builder()
                     .setTitle("Biometric Login")
                     .setSubtitle("Log in using your biometric credential")
-                    .setNegativeButtonText("Cancel")
+                    .setNegativeButtonText("Use Password")
                     .build();
 
             biometricPrompt.authenticate(promptInfo);
@@ -133,8 +137,15 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void navigateToWelcome() {
-        startActivity(new Intent(MainActivity.this, Welcome.class));
+    private void navigateToSignIn(String role) {
+        // Redirect directly to the appropriate Sign In screen
+        Intent intent;
+        if ("seller".equals(role)) {
+            intent = new Intent(MainActivity.this, SellerSignIn.class);
+        } else {
+            intent = new Intent(MainActivity.this, SignIn.class);
+        }
+        startActivity(intent);
         finish();
     }
 }

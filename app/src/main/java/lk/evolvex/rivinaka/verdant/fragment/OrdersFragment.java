@@ -1,20 +1,25 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
@@ -211,5 +216,73 @@ public class OrdersFragment extends Fragment implements OrderAdapter.OnOrderClic
                     Toast.makeText(getContext(), "Order cancelled and items restocked", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to cancel order", Toast.LENGTH_SHORT).show());
+    }
+
+    @Override
+    public void onRateProduct(CartItem item) {
+        showRatingDialog(item);
+    }
+
+    private void showRatingDialog(CartItem item) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_rate_product, null);
+        builder.setView(dialogView);
+
+        TextView tvProductName = dialogView.findViewById(R.id.tvProductName);
+        RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
+        MaterialButton btnSubmitRating = dialogView.findViewById(R.id.btnSubmitRating);
+
+        tvProductName.setText(item.getProductName());
+
+        AlertDialog dialog = builder.create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        btnSubmitRating.setOnClickListener(v -> {
+            float rating = ratingBar.getRating();
+            if (rating == 0) {
+                Toast.makeText(getContext(), "Please select a rating", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            submitRating(item.getProductId(), rating, dialog);
+        });
+
+        dialog.show();
+    }
+
+    private void submitRating(String productId, float rating, AlertDialog dialog) {
+        DocumentReference productRef = db.collection("products").document(productId);
+
+        db.runTransaction(transaction -> {
+            com.google.firebase.firestore.DocumentSnapshot productSnapshot = transaction.get(productRef);
+            
+            double currentRating = 0.0;
+            long currentCount = 0;
+            
+            if (productSnapshot.exists()) {
+                Double ratingVal = productSnapshot.getDouble("rating");
+                Long countVal = productSnapshot.getLong("ratingCount");
+                
+                if (ratingVal != null) currentRating = ratingVal;
+                if (countVal != null) currentCount = countVal;
+            }
+
+            // Calculate new average rating
+            double totalRatingSum = (currentRating * currentCount) + rating;
+            long newCount = currentCount + 1;
+            double newAverageRating = totalRatingSum / newCount;
+
+            transaction.update(productRef, "rating", newAverageRating);
+            transaction.update(productRef, "ratingCount", newCount);
+
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Toast.makeText(getContext(), "Rating submitted successfully", Toast.LENGTH_SHORT).show();
+            dialog.dismiss();
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Failed to submit rating: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        });
     }
 }
