@@ -363,6 +363,8 @@ public class CheckoutFragment extends Fragment {
 
             DocumentReference productRef = db.collection("products").document(item.getProductId());
             batch.update(productRef, "stock", FieldValue.increment(-item.getQuantity()));
+            // Increment soldCount when an order is placed
+            batch.update(productRef, "soldCount", FieldValue.increment(item.getQuantity()));
         }
 
         batch.commit()

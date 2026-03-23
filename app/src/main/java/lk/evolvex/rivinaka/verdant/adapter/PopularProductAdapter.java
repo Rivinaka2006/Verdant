@@ -68,9 +68,9 @@ public class PopularProductAdapter extends RecyclerView.Adapter<PopularProductAd
             tvProductName.setText(product.getName());
             tvPrice.setText(String.format("Rs. %.2f", product.getPrice()));
             
-            // Format rating and count: e.g., "4.5 (120 reviews)"
-            String ratingText = String.format(Locale.getDefault(), "%.1f (%d reviews)", 
-                    product.getRating(), product.getRatingCount());
+            // Format: Rating (RatingCount reviews) | SoldCount sold
+            String ratingText = String.format(Locale.getDefault(), "%.1f (%d reviews) | %d sold", 
+                    product.getRating(), product.getRatingCount(), product.getSoldCount());
             tvRatingAndSold.setText(ratingText);
 
             if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {

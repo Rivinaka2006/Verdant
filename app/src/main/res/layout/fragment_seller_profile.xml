@@ -51,7 +51,9 @@
                     android:textStyle="bold"
                     android:textColor="@color/white"
                     android:layout_marginTop="12dp" />
+
                 <TextView
+                    android:id="@+id/verifiedStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Verified Seller"

@@ -68,11 +68,11 @@ public class ForYouProductAdapter extends RecyclerView.Adapter<ForYouProductAdap
             tvPrice.setText(String.format("Rs. %.2f", product.getPrice()));
             tvOldPrice.setText(String.format("Rs. %.2f", product.getOldPrice()));
             
-            // Display rating and count: e.g. "4.5 (120)"
-            tvRating.setText(String.format(Locale.getDefault(), "%.1f (%d)", 
-                    product.getRating(), product.getRatingCount()));
+            // Display only average rating
+            tvRating.setText(String.format(Locale.getDefault(), "%.1f", product.getRating()));
             
-            tvSold.setText("Sold " + product.getSoldCount());
+            // Format and display sold count
+            tvSold.setText(formatSoldCount(product.getSoldCount()));
 
             if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
                 Glide.with(itemView.getContext())
@@ -86,6 +86,13 @@ public class ForYouProductAdapter extends RecyclerView.Adapter<ForYouProductAdap
                     listener.onProductClick(product);
                 }
             });
+        }
+
+        private String formatSoldCount(int count) {
+            if (count >= 1000) {
+                return String.format(Locale.getDefault(), "%.1fk sold", count / 1000.0);
+            }
+            return count + " sold";
         }
     }
 }

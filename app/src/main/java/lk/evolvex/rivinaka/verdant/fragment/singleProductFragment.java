@@ -25,6 +25,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
@@ -39,7 +40,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
     private String productId;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private TextView tvProductName, tvProductWeight, tvPrice, tvDescription, tvCareInstructions, tvWateringFrequency, tvLightRequirement;
+    private TextView tvProductName, tvProductWeight, tvPrice, tvDescription, tvCareInstructions, tvWateringFrequency, tvLightRequirement, tvRating;
     private ViewPager2 viewPager;
     private Button btnAddToCart, btnBuyNow;
     private Product currentProduct;
@@ -101,6 +102,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         tvProductName = view.findViewById(R.id.tv_product_name);
         tvProductWeight = view.findViewById(R.id.tv_product_weight);
         tvPrice = view.findViewById(R.id.tv_price);
+        tvRating = view.findViewById(R.id.tv_rating);
         tvDescription = view.findViewById(R.id.tv_description_text);
         tvCareInstructions = view.findViewById(R.id.tv_care_instructions_text);
         tvWateringFrequency = view.findViewById(R.id.tv_watering_frequency_text);
@@ -221,6 +223,10 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         tvCareInstructions.setText(product.getCareInstructions());
         tvWateringFrequency.setText(product.getWaterFrequency());
         tvLightRequirement.setText(product.getLightRequirement());
+
+        // Display rating and review count
+        tvRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", 
+                product.getRating(), product.getRatingCount()));
 
         if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
             ImageSliderAdapter adapter = new ImageSliderAdapter(product.getImageUrls());

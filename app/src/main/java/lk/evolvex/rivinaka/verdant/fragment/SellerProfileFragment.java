@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -45,7 +46,7 @@ import lk.evolvex.rivinaka.verdant.activity.SetFingerPrint;
 
 public class SellerProfileFragment extends Fragment {
 
-    private TextView tvBusinessName, tvLocation, tvContact, tvAccountHolder, tvAccountNumber, tvCoordinates;
+    private TextView tvBusinessName, tvLocation, tvContact, tvAccountHolder, tvAccountNumber, tvCoordinates, verifiedStatus;
     private ImageView ivSellerProfile;
     private MaterialButton btnLogout, btnUpdateBankDetails, btnUpdateLocation;
     private SwitchMaterial swBiometric;
@@ -119,6 +120,7 @@ public class SellerProfileFragment extends Fragment {
         tvContact = view.findViewById(R.id.tvContact);
         tvAccountHolder = view.findViewById(R.id.tvAccountHolder);
         tvAccountNumber = view.findViewById(R.id.tvAccountNumber);
+        verifiedStatus = view.findViewById(R.id.verifiedStatus);
         ivSellerProfile = view.findViewById(R.id.ivSellerProfile);
         btnLogout = view.findViewById(R.id.btnLogout);
         btnUpdateBankDetails = view.findViewById(R.id.btnUpdateBankDetails);
@@ -366,6 +368,10 @@ public class SellerProfileFragment extends Fragment {
                                     Toast.makeText(getContext(), "Bank details submitted for verification", Toast.LENGTH_SHORT).show();
                                     tvAccountHolder.setText(name);
                                     tvAccountNumber.setText(number);
+                                    
+                                    verifiedStatus.setText("Verification Pending");
+                                    verifiedStatus.setTextColor(Color.parseColor("#FFA500")); // Orange
+                                    
                                     dialog.dismiss();
                                 })
                                 .addOnFailureListener(e -> {
@@ -424,6 +430,20 @@ public class SellerProfileFragment extends Fragment {
                         
                         String accHolder = nurseryDoc.getString("bankAccountName");
                         String accNumber = nurseryDoc.getString("bankAccountNumber");
+                        
+                        Boolean isBankVerified = nurseryDoc.getBoolean("bankVerified");
+                        if (isBankVerified != null && isBankVerified) {
+                            verifiedStatus.setText("Verified Seller");
+                            verifiedStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.app_green));
+                        } else {
+                            if (accHolder != null && !accHolder.isEmpty()) {
+                                verifiedStatus.setText("Verification Pending");
+                                verifiedStatus.setTextColor(Color.parseColor("#FFA500")); // Orange
+                            } else {
+                                verifiedStatus.setText("Unverified Seller");
+                                verifiedStatus.setTextColor(Color.parseColor("#FF5252")); // Red
+                            }
+                        }
 
                         tvBusinessName.setText(name != null ? name : "N/A");
                         tvContact.setText(phone != null ? phone : "N/A");
@@ -464,6 +484,9 @@ public class SellerProfileFragment extends Fragment {
                                     .circleCrop()
                                     .into(ivSellerProfile);
                         }
+                        
+                        verifiedStatus.setText("Unverified Seller");
+                        verifiedStatus.setTextColor(Color.parseColor("#FF5252"));
                     }
                 });
     }
