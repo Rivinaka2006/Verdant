@@ -5,14 +5,12 @@ plugins {
 
 android {
     namespace 'lk.evolvex.rivinaka.verdant'
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk 36
 
     defaultConfig {
         applicationId "lk.evolvex.rivinaka.verdant"
         minSdk 28
-        targetSdk 36
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
@@ -39,16 +37,6 @@ android {
             excludes += '/META-INF/NOTICE.md'
             excludes += '/META-INF/LICENSE.md'
             excludes += '/META-INF/base.kotlin_module'
-        }
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        jcenter()
-        maven {
-            url  "https://jitpack.io"
         }
     }
 }
@@ -83,8 +71,9 @@ dependencies {
     implementation libs.gson
     implementation libs.mpandroidchart
     
-    // Google Play Services for Location
+    // Google Play Services
     implementation libs.play.services.location
+    implementation libs.play.services.maps
 
     // Biometric
     implementation libs.biometric

@@ -21,6 +21,7 @@ androidMail = "1.6.8"
 payhere = "3.0.4"
 mpandroidchart = "v3.1.0"
 playServicesLocation = "21.3.0"
+playServicesMaps = "19.0.0"
 biometric = "1.1.0"
 playServicesAuth = "21.3.0"
 
@@ -50,6 +51,7 @@ android-activation = { module = "com.sun.mail:android-activation", version.ref =
 payhere-sdk = { module = "com.github.payhere-lk:payhere-android-sdk", version.ref = "payhere" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 

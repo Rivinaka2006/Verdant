@@ -18,6 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -35,7 +41,7 @@ import lk.evolvex.rivinaka.verdant.model.CartItem;
 import lk.evolvex.rivinaka.verdant.model.Product;
 import lk.evolvex.rivinaka.verdant.model.Nursery;
 
-public class singleProductFragment extends Fragment implements SpecialOfferAdapter.OnProductClickListener {
+public class singleProductFragment extends Fragment implements SpecialOfferAdapter.OnProductClickListener, OnMapReadyCallback {
 
     private String productId;
     private FirebaseFirestore db;
@@ -49,6 +55,11 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
     private ImageView ivSellerProfile;
     private TextView tvSellerName, tvSellerRating;
     private Button btnViewShop;
+
+    // Map
+    private MapView mapView;
+    private GoogleMap googleMap;
+    private Nursery currentNursery;
 
     // Similar Items
     private RecyclerView rvSimilarItems;
@@ -70,7 +81,13 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_single_product, container, false);
+        View view = inflater.inflate(R.layout.fragment_single_product, container, false);
+        
+        mapView = view.findViewById(R.id.map_view);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+        
+        return view;
     }
 
     @Override
@@ -199,6 +216,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                     if (documentSnapshot.exists()) {
                         Nursery nursery = documentSnapshot.toObject(Nursery.class);
                         if (nursery != null) {
+                            nursery.setNurseryId(documentSnapshot.getId());
                             displaySellerData(nursery);
                         }
                     } else {
@@ -207,6 +225,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                                     if (!queryDocumentSnapshots.isEmpty()) {
                                         Nursery nursery = queryDocumentSnapshots.getDocuments().get(0).toObject(Nursery.class);
                                         if (nursery != null) {
+                                            nursery.setNurseryId(queryDocumentSnapshots.getDocuments().get(0).getId());
                                             displaySellerData(nursery);
                                         }
                                     }
@@ -247,20 +266,42 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
     private void displaySellerData(Nursery nursery) {
         if (getActivity() == null) return;
         
+        this.currentNursery = nursery;
         tvSellerName.setText(nursery.getNurseryName());
-        tvSellerRating.setText(String.format("%.1f (%d reviews)", nursery.getRatingAverage(), nursery.getTotalReviews()));
+        tvSellerRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", nursery.getRatingAverage(), nursery.getTotalReviews()));
         
         if (nursery.getBannerImageUrl() != null && !nursery.getBannerImageUrl().isEmpty()) {
             Glide.with(this)
                     .load(nursery.getBannerImageUrl())
-                    .placeholder(R.drawable.person_icon)
-                    .error(R.drawable.person_icon)
+                    .placeholder(R.drawable.logo)
+                    .error(R.drawable.logo)
                     .into(ivSellerProfile);
         }
 
         btnViewShop.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Opening " + nursery.getNurseryName(), Toast.LENGTH_SHORT).show();
+            ShopDetailsFragment fragment = ShopDetailsFragment.newInstance(nursery.getNurseryId());
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
+
+        updateMapLocation();
+    }
+
+    private void updateMapLocation() {
+        if (googleMap != null && currentNursery != null) {
+            LatLng location = new LatLng(currentNursery.getLatitude(), currentNursery.getLongitude());
+            googleMap.clear();
+            googleMap.addMarker(new MarkerOptions().position(location).title(currentNursery.getNurseryName()));
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f));
+        }
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        this.googleMap = googleMap;
+        updateMapLocation();
     }
 
     @Override
@@ -315,4 +356,33 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mapView != null) mapView.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mapView != null) mapView.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mapView != null) mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mapView != null) mapView.onLowMemory();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mapView != null) mapView.onSaveInstanceState(outState);
+    }
 }
