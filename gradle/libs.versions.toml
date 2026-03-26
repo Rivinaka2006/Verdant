@@ -24,6 +24,8 @@ playServicesLocation = "21.3.0"
 playServicesMaps = "19.0.0"
 biometric = "1.1.0"
 playServicesAuth = "21.3.0"
+firebaseMessaging = "24.1.0"
+firebaseMessagingVersion = "25.0.1"
 
 [libraries]
 appcompat-v160 = { module = "androidx.appcompat:appcompat", version.ref = "appcompatVersion" }
@@ -33,6 +35,7 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 firebase-storage = { module = "com.google.firebase:firebase-storage" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -54,6 +57,7 @@ play-services-location = { module = "com.google.android.gms:play-services-locati
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+google-firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessagingVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

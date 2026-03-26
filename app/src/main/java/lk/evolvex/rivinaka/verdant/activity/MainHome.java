@@ -38,6 +38,7 @@ import lk.evolvex.rivinaka.verdant.databinding.ActivityNavMainBinding;
 import lk.evolvex.rivinaka.verdant.databinding.NavHeaderMainBinding;
 import lk.evolvex.rivinaka.verdant.fragment.CartFragment;
 import lk.evolvex.rivinaka.verdant.fragment.HomeFragment;
+import lk.evolvex.rivinaka.verdant.fragment.NotificationsFragment;
 import lk.evolvex.rivinaka.verdant.fragment.OrdersFragment;
 import lk.evolvex.rivinaka.verdant.fragment.ProfileFragment;
 import lk.evolvex.rivinaka.verdant.fragment.SearchFragment;
@@ -50,7 +51,7 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
     private DrawerLayout drawerLayout;
     private BottomNavigationView bottomNavigationView;
     private NavigationView navigationView;
-    private ImageView btnDrawer, ivProfilePic, searchTool, btnFav;
+    private ImageView btnDrawer, ivProfilePic, searchTool, btnFav, btnNotif;
     private ConstraintLayout headerContainer;
     private TextView tvGreeting, tvUsername;
     private EditText etSearch;
@@ -86,6 +87,7 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
         searchTool = findViewById(R.id.searchTool);
         searchContainer = findViewById(R.id.searchContainer);
         btnFav = findViewById(R.id.btnFav);
+        btnNotif = findViewById(R.id.btnNotif);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer_layout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -120,6 +122,17 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
         if (btnFav != null) {
             btnFav.setOnClickListener(v -> {
                 bottomNavigationView.setSelectedItemId(R.id.nav_profile);
+            });
+        }
+
+        if (btnNotif != null) {
+            btnNotif.setOnClickListener(v -> {
+                headerContainer.setVisibility(View.GONE);
+                bottomNavigationView.setVisibility(View.GONE);
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new NotificationsFragment())
+                        .addToBackStack(null)
+                        .commit();
             });
         }
 

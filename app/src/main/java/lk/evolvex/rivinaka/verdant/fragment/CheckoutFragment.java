@@ -24,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +45,7 @@ import lk.evolvex.rivinaka.verdant.adapter.CheckoutAdapter;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
 import lk.evolvex.rivinaka.verdant.model.Order;
 import lk.evolvex.rivinaka.verdant.model.User;
+import lk.evolvex.rivinaka.verdant.util.NotificationHelper;
 import lk.payhere.androidsdk.PHConstants;
 import lk.payhere.androidsdk.PHMainActivity;
 import lk.payhere.androidsdk.PHResponse;
@@ -392,8 +394,14 @@ public class CheckoutFragment extends Fragment {
         batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "Order placed successfully!", Toast.LENGTH_LONG).show();
+                    NotificationHelper.showOrderNotification(getContext(), "Order Success", "Your order #" + orderId.substring(0, 8) + " has been placed successfully!");
                     if (getActivity() != null) {
-                        getActivity().onBackPressed();
+                        BottomNavigationView bottomNav = getActivity().findViewById(R.id.bottom_nav);
+                        if (bottomNav != null) {
+                            bottomNav.setSelectedItemId(R.id.nav_home);
+                        } else {
+                            getActivity().onBackPressed();
+                        }
                     }
                 })
                 .addOnFailureListener(e -> {

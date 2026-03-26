@@ -1,23 +1,21 @@
 package lk.evolvex.rivinaka.verdant.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Random;
-
 import lk.evolvex.rivinaka.verdant.databinding.ActivityForgotPasswordBinding;
-import lk.evolvex.rivinaka.verdant.util.EmailUtil;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
 
     private ActivityForgotPasswordBinding binding;
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private boolean isSeller = false;
 
     @Override
@@ -27,16 +25,17 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         isSeller = getIntent().getBooleanExtra("isSeller", false);
 
         binding.ivBack.setOnClickListener(v -> finish());
 
         binding.btnContinue.setOnClickListener(v -> {
-            validateAndSendOtp();
+            validateAndSendResetEmail();
         });
     }
 
-    private void validateAndSendOtp() {
+    private void validateAndSendResetEmail() {
         String email = binding.tilEmail.getEditText().getText().toString().trim();
 
         if (email.isEmpty()) {
@@ -60,8 +59,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
-                        // User exists, send OTP
-                        sendResetOtp(email);
+                        // User exists, send Firebase password reset email
+                        sendFirebaseResetEmail(email);
                     } else {
                         String message = isSeller ? "No seller account found with this email" : "No customer account found with this email";
                         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -69,21 +68,15 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 });
     }
 
-    private void sendResetOtp(String email) {
-        String otp = String.valueOf(new Random().nextInt(9000) + 1000);
-        
-        String subject = "Verdant - Password Reset Code";
-        String body = "Hi,\n\nYou requested to reset your password. Your verification code is: " + otp + "\n\nPlease enter this code in the app to proceed with resetting your password.\n\nIf you did not request this, please ignore this email.\n\nThank you,\nVerdant Team";
-
-        EmailUtil.sendEmail(email, subject, body);
-        Toast.makeText(this, "Reset code sent to your email", Toast.LENGTH_SHORT).show();
-
-        // Navigate to OTP Verify screen with a flag for password reset
-        Intent intent = new Intent(this, OtpVerify.class);
-        intent.putExtra("email", email);
-        intent.putExtra("otp", otp);
-        intent.putExtra("isForgotPassword", true);
-        intent.putExtra("isSeller", isSeller);
-        startActivity(intent);
+    private void sendFirebaseResetEmail(String email) {
+        mAuth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(this, "A reset link has been sent to your email.", Toast.LENGTH_LONG).show();
+                        finish(); // Return to Login screen
+                    } else {
+                        Toast.makeText(this, "Error: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

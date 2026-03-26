@@ -1,5 +1,8 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -10,6 +13,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -23,6 +28,7 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +65,15 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
     private Handler sliderHandler = new Handler();
     
     private Map<String, Integer> soldCountMap = new HashMap<>();
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    getFCMToken();
+                } else {
+                    Toast.makeText(getContext(), "Notifications disabled", Toast.LENGTH_SHORT).show();
+                }
+            });
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -120,6 +135,43 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
 
         loadBanners();
         refreshHomeData();
+        askNotificationPermission();
+    }
+
+    private void askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS) ==
+                    PackageManager.PERMISSION_GRANTED) {
+                getFCMToken();
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            }
+        } else {
+            getFCMToken();
+        }
+    }
+
+    private void getFCMToken() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                        return;
+                    }
+
+                    String token = task.getResult();
+                    updateTokenInFirestore(token);
+                });
+    }
+
+    private void updateTokenInFirestore(String token) {
+        String userId = mAuth.getUid();
+        if (userId != null) {
+            db.collection("users").document(userId)
+                    .update("fcmToken", token)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM Token updated"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to update FCM Token", e));
+        }
     }
 
     private void refreshHomeData() {

@@ -10,12 +10,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Random;
-
 import lk.evolvex.rivinaka.verdant.databinding.ActivitySignUpBinding;
-import lk.evolvex.rivinaka.verdant.util.EmailUtil;
+import lk.evolvex.rivinaka.verdant.model.User;
 
 public class SignUp extends AppCompatActivity {
 
@@ -82,28 +81,47 @@ public class SignUp extends AppCompatActivity {
             binding.tilPassword.setError(null);
             binding.tilConfirmPassword.setError(null);
 
-            // Generate a 4-digit OTP
-            String otp = String.valueOf(new Random().nextInt(9000) + 1000);
-
-            // Send real email
-            sendEmailVerification(email, otp);
-
-            // Proceed to OTP Verification screen
-            Intent intent = new Intent(SignUp.this, OtpVerify.class);
-            intent.putExtra("fullName", fullName);
-            intent.putExtra("email", email);
-            intent.putExtra("password", password);
-            intent.putExtra("otp", otp);
-            startActivity(intent);
+            binding.btnSignUp.setEnabled(false);
+            
+            mAuth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, task -> {
+                        if (task.isSuccessful()) {
+                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+                            if (firebaseUser != null) {
+                                saveUserToFirestore(firebaseUser.getUid(), fullName, email);
+                            }
+                        } else {
+                            binding.btnSignUp.setEnabled(true);
+                            Toast.makeText(SignUp.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
         }
     }
 
-    private void sendEmailVerification(String email, String otp) {
-        String subject = "Verdant - Email Verification Code";
-        String body = "Hi,\n\nYour verification code is: " + otp + "\n\nPlease enter this code in the app to complete your registration.\n\nThank you,\nVerdant Team";
-        
-        EmailUtil.sendEmail(email, subject, body);
-        Toast.makeText(this, "Verification code sent to " + email, Toast.LENGTH_SHORT).show();
+    private void saveUserToFirestore(String uid, String fullName, String email) {
+        User user = User.builder()
+                .userId(uid)
+                .fullName(fullName)
+                .email(email)
+                .role("customer")
+                .biometricEnabled(false)
+                .createdAt(com.google.firebase.Timestamp.now())
+                .build();
+
+        firebaseFirestore.collection("users")
+                .document(uid)
+                .set(user)
+                .addOnSuccessListener(unused -> {
+                    Toast.makeText(SignUp.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(SignUp.this, SignIn.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    binding.btnSignUp.setEnabled(true);
+                    Toast.makeText(SignUp.this, "Error saving user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void setupTextWatchers() {
