@@ -1,9 +1,12 @@
 package lk.evolvex.rivinaka.verdant.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,9 +26,15 @@ public class SellerSignIn extends AppCompatActivity {
 
     private TextInputEditText etEmail, etPassword;
     private Button btnSignIn;
-    private TextView tvSignUp;
+    private TextView tvSignUp, tvForgotPassword;
+    private CheckBox cbRememberMe;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private SharedPreferences sharedPreferences;
+    private static final String PREF_NAME = "SellerLoginPrefs";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PASSWORD = "password";
+    private static final String KEY_REMEMBER_ME = "remember_me";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,11 +44,16 @@ public class SellerSignIn extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnSignIn = findViewById(R.id.btnSignIn);
         tvSignUp = findViewById(R.id.tvSignUp);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
+        cbRememberMe = findViewById(R.id.cbRememberMe);
+
+        loadSavedCredentials();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -53,6 +67,35 @@ public class SellerSignIn extends AppCompatActivity {
             Intent intent = new Intent(SellerSignIn.this, SellerSignUp.class);
             startActivity(intent);
         });
+
+        tvForgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(SellerSignIn.this, ForgotPasswordActivity.class);
+            intent.putExtra("isSeller", true);
+            startActivity(intent);
+        });
+    }
+
+    private void loadSavedCredentials() {
+        boolean rememberMe = sharedPreferences.getBoolean(KEY_REMEMBER_ME, false);
+        cbRememberMe.setChecked(rememberMe);
+        if (rememberMe) {
+            String email = sharedPreferences.getString(KEY_EMAIL, "");
+            String password = sharedPreferences.getString(KEY_PASSWORD, "");
+            etEmail.setText(email);
+            etPassword.setText(password);
+        }
+    }
+
+    private void saveCredentials(String email, String password) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (cbRememberMe.isChecked()) {
+            editor.putString(KEY_EMAIL, email);
+            editor.putString(KEY_PASSWORD, password);
+            editor.putBoolean(KEY_REMEMBER_ME, true);
+        } else {
+            editor.clear();
+        }
+        editor.apply();
     }
 
     private void loginSeller() {
@@ -67,6 +110,7 @@ public class SellerSignIn extends AppCompatActivity {
         btnSignIn.setEnabled(false);
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(authResult -> {
+                    saveCredentials(email, password);
                     checkIfSeller(authResult.getUser().getUid());
                 })
                 .addOnFailureListener(e -> {

@@ -24,6 +24,7 @@ import java.util.List;
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.AddEditProductActivity;
 import lk.evolvex.rivinaka.verdant.adapter.SellerProductAdapter;
+import lk.evolvex.rivinaka.verdant.model.Nursery;
 import lk.evolvex.rivinaka.verdant.model.Product;
 
 public class SellerProductManagementFragment extends Fragment implements SellerProductAdapter.OnProductActionListener {
@@ -34,6 +35,7 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
     private FirebaseAuth mAuth;
     private List<Product> productList;
     private SellerProductAdapter adapter;
+    private boolean isSellerVerified = false;
 
     @Nullable
     @Override
@@ -52,12 +54,37 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
 
         fabAddProduct.setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), AddEditProductActivity.class);
-            startActivity(intent);
+            if (isSellerVerified) {
+                Intent intent = new Intent(getContext(), AddEditProductActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(getContext(), "Your nursery must be verified to add products.", Toast.LENGTH_LONG).show();
+            }
         });
 
         setupRecyclerView();
+        checkSellerVerification();
         loadSellerProducts();
+    }
+
+    private void checkSellerVerification() {
+        if (mAuth.getCurrentUser() == null) return;
+
+        db.collection("nurseries")
+                .whereEqualTo("ownerId", mAuth.getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Nursery nursery = queryDocumentSnapshots.getDocuments().get(0).toObject(Nursery.class);
+                        if (nursery != null) {
+                            isSellerVerified = nursery.isVerified();
+                            if (!isSellerVerified) {
+                                // Optional: You could hide FAB or grey it out
+                                // fabAddProduct.setAlpha(0.5f);
+                            }
+                        }
+                    }
+                });
     }
 
     private void setupRecyclerView() {
@@ -94,12 +121,17 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
     public void onEditClick(Product product) {
         Intent intent = new Intent(getContext(), AddEditProductActivity.class);
         intent.putExtra("productId", product.getProductId());
-        // You can pass more data or handle editing logic in AddEditProductActivity
         startActivity(intent);
     }
 
     @Override
     public void onToggleAvailability(Product product, boolean isAvailable) {
+        if (!isSellerVerified && isAvailable) {
+            Toast.makeText(getContext(), "Only verified sellers can activate products.", Toast.LENGTH_SHORT).show();
+            adapter.notifyDataSetChanged(); // Reset switch
+            return;
+        }
+
         db.collection("products").document(product.getProductId())
                 .update("available", isAvailable)
                 .addOnSuccessListener(aVoid -> {
@@ -115,6 +147,7 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
     @Override
     public void onResume() {
         super.onResume();
+        checkSellerVerification();
         loadSellerProducts(); // Refresh list when returning from Add/Edit
     }
 }

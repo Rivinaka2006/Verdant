@@ -33,5 +33,6 @@ public class Nursery {
     private String bankNameBranch;
     private String bankProofUrl;
     private boolean isBankVerified;
+    private boolean isVerified;
 
 }

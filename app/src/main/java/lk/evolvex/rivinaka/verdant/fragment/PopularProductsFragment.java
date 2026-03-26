@@ -20,7 +20,10 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
@@ -35,6 +38,7 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
     private List<Product> productList;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private Map<String, Integer> soldCountMap = new HashMap<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -67,21 +71,52 @@ public class PopularProductsFragment extends Fragment implements PopularProductA
         rvPopularProductsAll.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPopularProductsAll.setAdapter(adapter);
 
-        loadAllPopularProducts();
+        loadSoldCountMapAndProducts();
+    }
+
+    private void loadSoldCountMapAndProducts() {
+        db.collection("orders")
+                .whereIn("status", Arrays.asList("Delivered", "DELIVERED", "Completed", "COMPLETED"))
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    soldCountMap.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        List<Map<String, Object>> items = (List<Map<String, Object>>) doc.get("items");
+                        if (items != null) {
+                            for (Map<String, Object> item : items) {
+                                String productId = (String) item.get("productId");
+                                Long quantity = (Long) item.get("quantity");
+                                if (productId != null && quantity != null) {
+                                    soldCountMap.put(productId, soldCountMap.getOrDefault(productId, 0) + quantity.intValue());
+                                }
+                            }
+                        }
+                    }
+                    loadAllPopularProducts();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("PopularProductsFrag", "Error loading sold counts", e);
+                    loadAllPopularProducts();
+                });
     }
 
     private void loadAllPopularProducts() {
         db.collection("products")
                 .whereEqualTo("available", true)
-                .orderBy("soldCount", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     productList.clear();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
+                        // Apply calculated sold count
+                        product.setSoldCount(soldCountMap.getOrDefault(product.getProductId(), 0));
                         productList.add(product);
                     }
+                    
+                    // Sort locally since we're using dynamic sold counts
+                    productList.sort((p1, p2) -> Integer.compare(p2.getSoldCount(), p1.getSoldCount()));
+                    
                     adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {

@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
@@ -25,8 +24,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.util.Locale;
-
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.model.Nursery;
 
@@ -37,7 +34,7 @@ public class ShopDetailsFragment extends Fragment implements OnMapReadyCallback 
     private FirebaseFirestore db;
     
     private ImageView ivShopLogo;
-    private TextView tvShopName, tvShopRating, tvProductCount, tvShopDescription;
+    private TextView tvShopName, tvShopDescription;
     private MapView mapView;
     private GoogleMap googleMap;
     private ProgressBar progressBar;
@@ -88,8 +85,6 @@ public class ShopDetailsFragment extends Fragment implements OnMapReadyCallback 
     private void initViews(View view) {
         ivShopLogo = view.findViewById(R.id.iv_shop_logo);
         tvShopName = view.findViewById(R.id.tv_shop_name);
-        tvShopRating = view.findViewById(R.id.tv_shop_rating);
-        tvProductCount = view.findViewById(R.id.tv_product_count);
         tvShopDescription = view.findViewById(R.id.tv_shop_description);
         mapView = view.findViewById(R.id.map_view);
         progressBar = view.findViewById(R.id.progress_bar);
@@ -128,7 +123,6 @@ public class ShopDetailsFragment extends Fragment implements OnMapReadyCallback 
                         if (currentNursery != null) {
                             currentNursery.setNurseryId(documentSnapshot.getId());
                             displayShopData(currentNursery);
-                            loadProductCount();
                             updateMapLocation();
                         }
                     } else {
@@ -140,7 +134,6 @@ public class ShopDetailsFragment extends Fragment implements OnMapReadyCallback 
                                         if (currentNursery != null) {
                                             currentNursery.setNurseryId(queryDocumentSnapshots.getDocuments().get(0).getId());
                                             displayShopData(currentNursery);
-                                            loadProductCount();
                                             updateMapLocation();
                                         }
                                     } else {
@@ -159,27 +152,21 @@ public class ShopDetailsFragment extends Fragment implements OnMapReadyCallback 
                 });
     }
 
-    private void loadProductCount() {
-        db.collection("products")
-                .whereEqualTo("nurseryId", shopId)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    int count = queryDocumentSnapshots.size();
-                    tvProductCount.setText(String.format(Locale.getDefault(), "%d Products", count));
-                });
-    }
-
     private void displayShopData(Nursery nursery) {
         tvShopName.setText(nursery.getNurseryName());
-        tvShopRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", 
-                nursery.getRatingAverage(), nursery.getTotalReviews()));
         tvShopDescription.setText(nursery.getDescription());
 
         if (nursery.getBannerImageUrl() != null && !nursery.getBannerImageUrl().isEmpty()) {
             Glide.with(this)
                     .load(nursery.getBannerImageUrl())
+                    .circleCrop()
                     .placeholder(R.drawable.logo)
                     .error(R.drawable.logo)
+                    .into(ivShopLogo);
+        } else {
+            Glide.with(this)
+                    .load(R.drawable.logo)
+                    .circleCrop()
                     .into(ivShopLogo);
         }
     }

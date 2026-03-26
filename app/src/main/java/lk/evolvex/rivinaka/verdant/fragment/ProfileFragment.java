@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.SetFingerPrint;
+import lk.evolvex.rivinaka.verdant.activity.SignIn;
 import lk.evolvex.rivinaka.verdant.model.Address;
 import lk.evolvex.rivinaka.verdant.model.User;
 
@@ -47,7 +48,7 @@ public class ProfileFragment extends Fragment {
     private LinearLayout llBillingHeader, llBillingContent, llShippingHeader, llShippingContent;
     private CheckBox cbSameAsBilling;
     private SwitchMaterial swBiometric;
-    private MaterialButton btnSave;
+    private MaterialButton btnSave, btnLogout;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private FirebaseStorage storage;
@@ -88,6 +89,16 @@ public class ProfileFragment extends Fragment {
         loadUserProfile();
 
         btnSave.setOnClickListener(v -> saveUserProfile());
+
+        btnLogout.setOnClickListener(v -> {
+            mAuth.signOut();
+            Intent intent = new Intent(getActivity(), SignIn.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            if (getActivity() != null) {
+                getActivity().finish();
+            }
+        });
         
         ivProfileImage.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK);
@@ -141,6 +152,7 @@ public class ProfileFragment extends Fragment {
         etShippingPostalCode = view.findViewById(R.id.etShippingPostalCode);
 
         btnSave = view.findViewById(R.id.btnSave);
+        btnLogout = view.findViewById(R.id.btnLogout);
     }
 
     private void uploadProfileImage(Uri imageUri) {

@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import lk.evolvex.rivinaka.verdant.R;
+import lk.evolvex.rivinaka.verdant.model.Nursery;
 import lk.evolvex.rivinaka.verdant.model.Product;
 
 public class AddEditProductActivity extends AppCompatActivity {
@@ -63,6 +64,7 @@ public class AddEditProductActivity extends AppCompatActivity {
     private String productId;
     private boolean isEditMode = false;
     private Product existingProduct;
+    private boolean isSellerVerified = false;
     
     private List<MediaItem> mediaItems = new ArrayList<>();
     private MediaAdapter mediaAdapter;
@@ -154,6 +156,7 @@ public class AddEditProductActivity extends AppCompatActivity {
 
         initViews();
         setupDropdowns();
+        checkSellerVerification();
 
         productId = getIntent().getStringExtra("productId");
         if (productId != null) {
@@ -193,7 +196,31 @@ public class AddEditProductActivity extends AppCompatActivity {
             pickVideoLauncher.launch(intent);
         });
 
-        btnSave.setOnClickListener(v -> startUploadProcess());
+        btnSave.setOnClickListener(v -> {
+            if (isSellerVerified) {
+                startUploadProcess();
+            } else {
+                Toast.makeText(this, "Only verified sellers can save products.", Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void checkSellerVerification() {
+        if (mAuth.getCurrentUser() == null) return;
+        db.collection("nurseries")
+                .whereEqualTo("ownerId", mAuth.getCurrentUser().getUid())
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Nursery nursery = queryDocumentSnapshots.getDocuments().get(0).toObject(Nursery.class);
+                        if (nursery != null) {
+                            isSellerVerified = nursery.isVerified();
+                            if (!isSellerVerified) {
+                                btnSave.setAlpha(0.5f);
+                            }
+                        }
+                    }
+                });
     }
 
     private void initViews() {
@@ -398,7 +425,7 @@ public class AddEditProductActivity extends AppCompatActivity {
         productData.put("careInstructions", careInstructions);
         productData.put("waterFrequency", waterFreq);
         productData.put("lightRequirement", lightReq);
-        productData.put("available", stock > 0);
+        productData.put("available", isSellerVerified && stock > 0);
         productData.put("imageUrls", imageUrls);
         productData.put("videoUrl", videoUrl);
 

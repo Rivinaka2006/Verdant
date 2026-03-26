@@ -41,6 +41,7 @@ import lk.evolvex.rivinaka.verdant.fragment.HomeFragment;
 import lk.evolvex.rivinaka.verdant.fragment.OrdersFragment;
 import lk.evolvex.rivinaka.verdant.fragment.ProfileFragment;
 import lk.evolvex.rivinaka.verdant.fragment.SearchFragment;
+import lk.evolvex.rivinaka.verdant.fragment.SearchSuggestionFragment;
 import lk.evolvex.rivinaka.verdant.model.User;
 
 public class MainHome extends AppCompatActivity implements BottomNavigationView.OnItemSelectedListener,
@@ -49,10 +50,11 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
     private DrawerLayout drawerLayout;
     private BottomNavigationView bottomNavigationView;
     private NavigationView navigationView;
-    private ImageView btnDrawer, ivProfilePic, searchTool;
+    private ImageView btnDrawer, ivProfilePic, searchTool, btnFav;
     private ConstraintLayout headerContainer;
     private TextView tvGreeting, tvUsername;
     private EditText etSearch;
+    private View searchContainer;
     private ActivityNavMainBinding binding;
     private NavHeaderMainBinding navHeaderMainBinding;
     private FirebaseAuth mAuth;
@@ -82,6 +84,8 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
         tvUsername = findViewById(R.id.tvUsername);
         etSearch = findViewById(R.id.etSearch);
         searchTool = findViewById(R.id.searchTool);
+        searchContainer = findViewById(R.id.searchContainer);
+        btnFav = findViewById(R.id.btnFav);
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.drawer_layout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -100,31 +104,22 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
         });
 
         if (etSearch != null) {
-            etSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                @Override
-                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                        String query = etSearch.getText().toString().trim();
-                        if (!query.isEmpty()) {
-                            hideKeyboard();
-                            performSearch(query);
-                        }
-                        return true;
-                    }
-                    return false;
-                }
-            });
+            etSearch.setFocusable(false);
+            etSearch.setClickable(true);
+            etSearch.setOnClickListener(v -> openSearchSuggestion());
+        }
+
+        if (searchContainer != null) {
+            searchContainer.setOnClickListener(v -> openSearchSuggestion());
         }
 
         if (searchTool != null) {
-            searchTool.setOnClickListener(v -> {
-                String query = etSearch.getText().toString().trim();
-                if (!query.isEmpty()) {
-                    hideKeyboard();
-                    performSearch(query);
-                } else {
-                    Toast.makeText(MainHome.this, "Please enter a search term", Toast.LENGTH_SHORT).show();
-                }
+            searchTool.setOnClickListener(v -> openSearchSuggestion());
+        }
+
+        if (btnFav != null) {
+            btnFav.setOnClickListener(v -> {
+                bottomNavigationView.setSelectedItemId(R.id.nav_profile);
             });
         }
 
@@ -135,6 +130,13 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
 
         updateGreeting();
         fetchUserData();
+    }
+
+    private void openSearchSuggestion() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new SearchSuggestionFragment())
+                .addToBackStack(null)
+                .commit();
     }
 
     private void hideKeyboard() {
@@ -236,6 +238,11 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
             drawerLayout.closeDrawer(GravityCompat.START);
         } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
+            // Restore visibility when popping back to HomeFragment
+            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+                setHeaderVisibility(View.VISIBLE);
+                setBottomNavVisibility(View.VISIBLE);
+            }
         } else {
             super.onBackPressed();
         }

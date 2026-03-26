@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,8 +31,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
@@ -46,7 +50,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
     private String productId;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private TextView tvProductName, tvProductWeight, tvPrice, tvDescription, tvCareInstructions, tvWateringFrequency, tvLightRequirement, tvRating;
+    private TextView tvProductName, tvProductWeight, tvPrice, tvDescription, tvCareInstructions, tvWateringFrequency, tvLightRequirement, tvRating, tvSoldCount;
     private ViewPager2 viewPager;
     private Button btnAddToCart, btnBuyNow;
     private Product currentProduct;
@@ -65,6 +69,12 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
     private RecyclerView rvSimilarItems;
     private SpecialOfferAdapter similarItemsAdapter;
     private List<Product> similarItemsList;
+
+    private Map<String, Integer> soldCountMap = new HashMap<>();
+
+    // Layout components for scrolling effects
+    private NestedScrollView nestedScrollView;
+    private View mediaContainer;
 
     public singleProductFragment() {
         // Required empty public constructor
@@ -99,9 +109,10 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
 
         initViews(view);
         setupToolbar(view);
+        setupScrollingEffects();
 
         if (productId != null) {
-            loadProductDetails();
+            loadSoldCountMapAndDetails();
         } else {
             Toast.makeText(getContext(), "Product not found", Toast.LENGTH_SHORT).show();
         }
@@ -113,6 +124,14 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                 Toast.makeText(getContext(), "Loading product details...", Toast.LENGTH_SHORT).show();
             }
         });
+
+        btnBuyNow.setOnClickListener(v -> {
+            if (currentProduct != null) {
+                buyNow();
+            } else {
+                Toast.makeText(getContext(), "Loading product details...", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void initViews(View view) {
@@ -120,6 +139,7 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         tvProductWeight = view.findViewById(R.id.tv_product_weight);
         tvPrice = view.findViewById(R.id.tv_price);
         tvRating = view.findViewById(R.id.tv_rating);
+        tvSoldCount = view.findViewById(R.id.tv_sold_count);
         tvDescription = view.findViewById(R.id.tv_description_text);
         tvCareInstructions = view.findViewById(R.id.tv_care_instructions_text);
         tvWateringFrequency = view.findViewById(R.id.tv_watering_frequency_text);
@@ -127,6 +147,9 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         viewPager = view.findViewById(R.id.viewPager_product_media);
         btnAddToCart = view.findViewById(R.id.btn_add_to_cart);
         btnBuyNow = view.findViewById(R.id.btn_buy_now);
+        
+        nestedScrollView = view.findViewById(R.id.nestedScrollView);
+        mediaContainer = view.findViewById(R.id.media_container);
 
         // Seller views
         ivSellerProfile = view.findViewById(R.id.iv_seller_profile);
@@ -159,6 +182,46 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         }
     }
 
+    private void setupScrollingEffects() {
+        if (nestedScrollView != null && mediaContainer != null) {
+            nestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                // Calculate fade alpha based on scroll position
+                // Max height of image container is 420dp, approx 1200px depending on screen
+                // We want it to fade out as it scrolls
+                float alpha = 1.0f - (Math.min(scrollY, 1000f) / 1000f);
+                mediaContainer.setAlpha(alpha);
+                
+                // Removed translation to keep the image component in a fixed position
+            });
+        }
+    }
+
+    private void loadSoldCountMapAndDetails() {
+        db.collection("orders")
+                .whereIn("status", Arrays.asList("Delivered", "DELIVERED", "Completed", "COMPLETED"))
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    soldCountMap.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        List<Map<String, Object>> items = (List<Map<String, Object>>) doc.get("items");
+                        if (items != null) {
+                            for (Map<String, Object> item : items) {
+                                String pid = (String) item.get("productId");
+                                Long quantity = (Long) item.get("quantity");
+                                if (pid != null && quantity != null) {
+                                    soldCountMap.put(pid, soldCountMap.getOrDefault(pid, 0) + quantity.intValue());
+                                }
+                            }
+                        }
+                    }
+                    loadProductDetails();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("SingleProductFragment", "Error loading sold counts", e);
+                    loadProductDetails();
+                });
+    }
+
     private void loadProductDetails() {
         db.collection("products").document(productId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -166,6 +229,9 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                         currentProduct = documentSnapshot.toObject(Product.class);
                         if (currentProduct != null) {
                             currentProduct.setProductId(documentSnapshot.getId());
+                            // Apply locally calculated sold count
+                            currentProduct.setSoldCount(soldCountMap.getOrDefault(currentProduct.getProductId(), 0));
+                            
                             displayProductData(currentProduct);
                             
                             // Load nursery/seller details
@@ -199,6 +265,8 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
+                        // Apply calculated sold count
+                        product.setSoldCount(soldCountMap.getOrDefault(product.getProductId(), 0));
                         
                         // Don't show the current product in similar items
                         if (!product.getProductId().equals(productId)) {
@@ -246,6 +314,9 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         // Display rating and review count
         tvRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", 
                 product.getRating(), product.getRatingCount()));
+        
+        // Display sold count in the dedicated tag
+        tvSoldCount.setText(formatSoldCount(product.getSoldCount()));
 
         if (product.getImageUrls() != null && !product.getImageUrls().isEmpty()) {
             ImageSliderAdapter adapter = new ImageSliderAdapter(product.getImageUrls());
@@ -263,12 +334,27 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
         }
     }
 
+    private String formatSoldCount(int count) {
+        if (count >= 1000) {
+            return String.format(Locale.getDefault(), "Sold %.1fk", count / 1000.0);
+        }
+        return "Sold " + count;
+    }
+
     private void displaySellerData(Nursery nursery) {
         if (getActivity() == null) return;
         
         this.currentNursery = nursery;
         tvSellerName.setText(nursery.getNurseryName());
-        tvSellerRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", nursery.getRatingAverage(), nursery.getTotalReviews()));
+        
+        // Set seller rating using product rating data as requested
+        if (currentProduct != null) {
+            tvSellerRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", 
+                    currentProduct.getRating(), currentProduct.getRatingCount()));
+        } else {
+            tvSellerRating.setText(String.format(Locale.getDefault(), "%.1f (%d reviews)", 
+                    nursery.getRatingAverage(), nursery.getTotalReviews()));
+        }
         
         if (nursery.getBannerImageUrl() != null && !nursery.getBannerImageUrl().isEmpty()) {
             Glide.with(this)
@@ -354,6 +440,38 @@ public class singleProductFragment extends Fragment implements SpecialOfferAdapt
                         .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Added to cart", Toast.LENGTH_SHORT).show());
             }
         });
+    }
+
+    private void buyNow() {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(getContext(), "Please sign in to buy", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String imageUrl = (currentProduct.getImageUrls() != null && !currentProduct.getImageUrls().isEmpty()) 
+                ? currentProduct.getImageUrls().get(0) : "";
+        
+        CartItem buyNowItem = CartItem.builder()
+                .productId(productId)
+                .productName(currentProduct.getName())
+                .productPrice(currentProduct.getPrice())
+                .quantity(1)
+                .productImage(imageUrl)
+                .available(currentProduct.isAvailable())
+                .build();
+
+        ArrayList<CartItem> items = new ArrayList<>();
+        items.add(buyNowItem);
+
+        CheckoutFragment fragment = new CheckoutFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("buy_now_items", items);
+        fragment.setArguments(bundle);
+
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override

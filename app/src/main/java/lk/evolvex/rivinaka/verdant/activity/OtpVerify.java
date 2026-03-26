@@ -26,6 +26,7 @@ public class OtpVerify extends AppCompatActivity {
     private String receivedOtp;
     private String fullName, email, password;
     private boolean isForgotPassword = false;
+    private boolean isSeller = false;
     private FirebaseAuth mAuth;
     private FirebaseFirestore firebaseFirestore;
     private CountDownTimer countDownTimer;
@@ -45,6 +46,7 @@ public class OtpVerify extends AppCompatActivity {
         password = getIntent().getStringExtra("password");
         receivedOtp = getIntent().getStringExtra("otp");
         isForgotPassword = getIntent().getBooleanExtra("isForgotPassword", false);
+        isSeller = getIntent().getBooleanExtra("isSeller", false);
 
         binding.tvEmail.setText(email);
 
@@ -79,6 +81,7 @@ public class OtpVerify extends AppCompatActivity {
                 // Navigate to Create New Password screen
                 Intent intent = new Intent(this, CreateNewPassword.class);
                 intent.putExtra("email", email);
+                intent.putExtra("isSeller", isSeller);
                 startActivity(intent);
                 finish();
             } else {

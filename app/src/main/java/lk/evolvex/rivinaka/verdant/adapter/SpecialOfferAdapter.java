@@ -1,5 +1,6 @@
 package lk.evolvex.rivinaka.verdant.adapter;
 
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,7 +67,14 @@ public class SpecialOfferAdapter extends RecyclerView.Adapter<SpecialOfferAdapte
         public void bind(Product product, OnProductClickListener listener) {
             tvProductName.setText(product.getName());
             tvPrice.setText(String.format("Rs. %.2f", product.getPrice()));
-            tvOldPrice.setText(String.format("Rs. %.2f", product.getOldPrice()));
+            
+            if (product.getOldPrice() > 0) {
+                tvOldPrice.setVisibility(View.VISIBLE);
+                tvOldPrice.setText(String.format("Rs. %.2f", product.getOldPrice()));
+                tvOldPrice.setPaintFlags(tvOldPrice.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            } else {
+                tvOldPrice.setVisibility(View.GONE);
+            }
             
             // Only display average rating, hide count
             tvRating.setText(String.format(Locale.getDefault(), "%.1f", product.getRating()));

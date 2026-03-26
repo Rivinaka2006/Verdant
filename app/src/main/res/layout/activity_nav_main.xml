@@ -20,9 +20,11 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
+        android:background="@drawable/side_nav_full_bg"
         app:headerLayout="@layout/nav_header_main"
         app:itemIconTint="@color/nav_selector"
         app:itemTextColor="@color/nav_selector"
-        app:menu="@menu/menu_drawer" />
+        app:menu="@menu/menu_drawer"
+        app:shapeAppearance="@style/ShapeAppearance.Verdant.SideNav" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

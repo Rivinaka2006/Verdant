@@ -88,38 +88,47 @@ public class SellerOrderDetailActivity extends AppCompatActivity {
         tvAddress.setText(currentOrder.getAddress());
         tvTotal.setText(String.format("Total: Rs. %.2f", currentOrder.getTotalAmount()));
         statusDropdown.setText(currentOrder.getStatus(), false);
-        
-        // Note: Customer details might need a separate fetch if not in Order model
-        // For now, using placeholders or data if available
     }
 
     private void updateOrderStatus() {
         String newStatus = statusDropdown.getText().toString();
         if (currentOrder == null || newStatus.equals(currentOrder.getStatus())) return;
 
+        String oldStatus = currentOrder.getStatus();
         WriteBatch batch = db.batch();
         DocumentReference orderRef = db.collection("orders").document(orderId);
         batch.update(orderRef, "status", newStatus);
 
-        // If order is being cancelled, restock items
-        if ("Cancelled".equalsIgnoreCase(newStatus) && !"Cancelled".equalsIgnoreCase(currentOrder.getStatus())) {
+        // Handle Stock (Restock if Cancelled, Deduct if re-opened from Cancelled)
+        if ("Cancelled".equalsIgnoreCase(newStatus) && !"Cancelled".equalsIgnoreCase(oldStatus)) {
             for (CartItem item : currentOrder.getItems()) {
                 DocumentReference productRef = db.collection("products").document(item.getProductId());
                 batch.update(productRef, "stock", FieldValue.increment(item.getQuantity()));
             }
-        } 
-        // If order was cancelled but is now being re-opened (unlikely but handled), deduct stock again
-        else if (!"Cancelled".equalsIgnoreCase(newStatus) && "Cancelled".equalsIgnoreCase(currentOrder.getStatus())) {
+        } else if (!"Cancelled".equalsIgnoreCase(newStatus) && "Cancelled".equalsIgnoreCase(oldStatus)) {
             for (CartItem item : currentOrder.getItems()) {
                 DocumentReference productRef = db.collection("products").document(item.getProductId());
                 batch.update(productRef, "stock", FieldValue.increment(-item.getQuantity()));
             }
         }
 
+        // Handle soldCount (Increment if changed to Delivered, Decrement if changed FROM Delivered)
+        if ("Delivered".equalsIgnoreCase(newStatus) && !"Delivered".equalsIgnoreCase(oldStatus)) {
+            for (CartItem item : currentOrder.getItems()) {
+                DocumentReference productRef = db.collection("products").document(item.getProductId());
+                batch.update(productRef, "soldCount", FieldValue.increment(item.getQuantity()));
+            }
+        } else if (!"Delivered".equalsIgnoreCase(newStatus) && "Delivered".equalsIgnoreCase(oldStatus)) {
+            for (CartItem item : currentOrder.getItems()) {
+                DocumentReference productRef = db.collection("products").document(item.getProductId());
+                batch.update(productRef, "soldCount", FieldValue.increment(-item.getQuantity()));
+            }
+        }
+
         batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     currentOrder.setStatus(newStatus);
-                    Toast.makeText(this, "Order updated successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Order updated to " + newStatus, Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }

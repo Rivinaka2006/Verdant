@@ -69,6 +69,7 @@ public class CheckoutFragment extends Fragment {
     private User currentUser;
     private boolean isPaymentExpanded;
     private boolean paymentActive;
+    private boolean isBuyNow = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -85,7 +86,22 @@ public class CheckoutFragment extends Fragment {
         initViews(view);
         setupRecyclerView();
         loadUserData();
-        loadCartItems();
+
+        if (getArguments() != null && getArguments().containsKey("buy_now_items")) {
+            isBuyNow = true;
+            cartItems.clear();
+            ArrayList<CartItem> items = (ArrayList<CartItem>) getArguments().getSerializable("buy_now_items");
+            if (items != null) {
+                cartItems.addAll(items);
+                calculateSubtotal();
+                adapter.notifyDataSetChanged();
+                updateTotal();
+                paymentActive = true;
+            }
+        } else {
+            loadCartItems();
+        }
+
         setupPaymentSelection(view);
 
         btnConfirmOrder.setOnClickListener(v -> handleOrderPlacement());
@@ -145,17 +161,23 @@ public class CheckoutFragment extends Fragment {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     cartItems.clear();
-                    subtotal = 0;
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         CartItem item = document.toObject(CartItem.class);
                         cartItems.add(item);
-                        subtotal += item.getProductPrice() * item.getQuantity();
                     }
+                    calculateSubtotal();
                     adapter.notifyDataSetChanged();
                     updateTotal();
                     paymentActive = true;
                 })
                 .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load cart", Toast.LENGTH_SHORT).show());
+    }
+
+    private void calculateSubtotal() {
+        subtotal = 0;
+        for (CartItem item : cartItems) {
+            subtotal += item.getProductPrice() * item.getQuantity();
+        }
     }
 
     private void updateTotal() {
@@ -198,7 +220,7 @@ public class CheckoutFragment extends Fragment {
 
     private void handleOrderPlacement() {
         String address = tvAddressDetails.getText().toString();
-        if (address.equals("Please add a shipping address")) {
+        if (address.equals("Please add a shipping address") || address.isEmpty()) {
             Toast.makeText(getContext(), "Please set a shipping address in your profile", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -357,14 +379,14 @@ public class CheckoutFragment extends Fragment {
         batch.set(orderRef, order);
 
         for (CartItem item : cartItems) {
-            DocumentReference cartItemRef = db.collection("users").document(userId)
-                    .collection("cart").document(item.getProductId());
-            batch.delete(cartItemRef);
+            if (!isBuyNow) {
+                DocumentReference cartItemRef = db.collection("users").document(userId)
+                        .collection("cart").document(item.getProductId());
+                batch.delete(cartItemRef);
+            }
 
             DocumentReference productRef = db.collection("products").document(item.getProductId());
             batch.update(productRef, "stock", FieldValue.increment(-item.getQuantity()));
-            // Increment soldCount when an order is placed
-            batch.update(productRef, "soldCount", FieldValue.increment(item.getQuantity()));
         }
 
         batch.commit()

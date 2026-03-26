@@ -52,8 +52,7 @@
                         android:layout_width="100dp"
                         android:layout_height="100dp"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/logo"
-                        app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.MediumComponent"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Verdant.Circle"
                         app:strokeColor="@color/app_green"
                         app:strokeWidth="2dp" />
 
@@ -66,43 +65,6 @@
                         android:textColor="@color/white"
                         android:textSize="22sp"
                         android:textStyle="bold" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@android:drawable/btn_star"
-                            app:tint="#FFC107" />
-
-                        <TextView
-                            android:id="@+id/tv_shop_rating"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="4.8 (120 reviews)"
-                            android:textColor="#FFC107"
-                            android:textSize="14sp" />
-
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="16dp"
-                            android:layout_marginHorizontal="12dp"
-                            android:background="#40FFFFFF" />
-
-                        <TextView
-                            android:id="@+id/tv_product_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="45 Products"
-                            android:textColor="#BDBDBD"
-                            android:textSize="14sp" />
-                    </LinearLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>

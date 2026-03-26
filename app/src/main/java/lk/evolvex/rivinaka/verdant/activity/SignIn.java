@@ -1,6 +1,8 @@
 package lk.evolvex.rivinaka.verdant.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -24,6 +26,11 @@ public class SignIn extends AppCompatActivity {
     private ActivitySignInBinding binding;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private SharedPreferences sharedPreferences;
+    private static final String PREF_NAME = "CustomerLoginPrefs";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_PASSWORD = "password";
+    private static final String KEY_REMEMBER_ME = "remember_me";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +41,10 @@ public class SignIn extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        sharedPreferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
 
         setupTextWatchers();
+        loadSavedCredentials();
 
         binding.btnSignIn.setOnClickListener(v -> {
             String email = binding.tilEmail.getEditText().getText().toString().trim();
@@ -62,6 +71,7 @@ public class SignIn extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            saveCredentials(email, password);
                             checkUserRole(mAuth.getCurrentUser());
                         } else {
                             binding.btnSignIn.setEnabled(true);
@@ -82,6 +92,29 @@ public class SignIn extends AppCompatActivity {
             Intent intent = new Intent(SignIn.this, ForgotPasswordActivity.class);
             startActivity(intent);
         });
+    }
+
+    private void loadSavedCredentials() {
+        boolean rememberMe = sharedPreferences.getBoolean(KEY_REMEMBER_ME, false);
+        binding.cbRemember.setChecked(rememberMe);
+        if (rememberMe) {
+            String email = sharedPreferences.getString(KEY_EMAIL, "");
+            String password = sharedPreferences.getString(KEY_PASSWORD, "");
+            binding.tilEmail.getEditText().setText(email);
+            binding.tilPassword.getEditText().setText(password);
+        }
+    }
+
+    private void saveCredentials(String email, String password) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (binding.cbRemember.isChecked()) {
+            editor.putString(KEY_EMAIL, email);
+            editor.putString(KEY_PASSWORD, password);
+            editor.putBoolean(KEY_REMEMBER_ME, true);
+        } else {
+            editor.clear();
+        }
+        editor.apply();
     }
 
     private void checkUserRole(FirebaseUser user) {

@@ -1,10 +1,16 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,7 +39,10 @@ public class SearchFragment extends Fragment implements ForYouProductAdapter.OnP
     private List<Product> productList;
     private FirebaseFirestore db;
     private ProgressBar progressBar;
-    private TextView tvNoResults, tvSearchTitle;
+    private TextView tvNoResults, tvSearchTitle, tvResultsCount;
+    private EditText etSearch;
+    private ImageView btnClearSearch;
+    private LinearLayout llNoResults;
     private String searchQuery;
 
     public static SearchFragment newInstance(String query) {
@@ -70,12 +79,8 @@ public class SearchFragment extends Fragment implements ForYouProductAdapter.OnP
             mainHome.setBottomNavVisibility(View.VISIBLE);
         }
 
-        tvSearchTitle = view.findViewById(R.id.tvSearchTitle);
-        rvSearchResults = view.findViewById(R.id.rvSearchResults);
-        progressBar = view.findViewById(R.id.progressBar);
-        tvNoResults = view.findViewById(R.id.tvNoResults);
-
-        view.findViewById(R.id.btnBack).setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        initViews(view);
+        setupSearchLogic();
 
         productList = new ArrayList<>();
         adapter = new ForYouProductAdapter(productList, this);
@@ -83,17 +88,66 @@ public class SearchFragment extends Fragment implements ForYouProductAdapter.OnP
         rvSearchResults.setAdapter(adapter);
 
         if (searchQuery != null && !searchQuery.isEmpty()) {
-            tvSearchTitle.setText("Results for \"" + searchQuery + "\"");
+            etSearch.setText(searchQuery);
             performSearch(searchQuery);
         }
     }
 
+    private void initViews(View view) {
+        tvSearchTitle = view.findViewById(R.id.tvSearchTitle);
+        tvResultsCount = view.findViewById(R.id.tvResultsCount);
+        rvSearchResults = view.findViewById(R.id.rvSearchResults);
+        progressBar = view.findViewById(R.id.progressBar);
+        tvNoResults = view.findViewById(R.id.tvNoResults);
+        etSearch = view.findViewById(R.id.etSearch);
+        btnClearSearch = view.findViewById(R.id.btnClearSearch);
+        llNoResults = view.findViewById(R.id.llNoResults);
+
+        view.findViewById(R.id.btnBack).setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        
+        btnClearSearch.setOnClickListener(v -> {
+            etSearch.setText("");
+            productList.clear();
+            adapter.notifyDataSetChanged();
+            updateResultsCount(0);
+        });
+
+        view.findViewById(R.id.btnFilter).setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Filter clicked", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void setupSearchLogic() {
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                btnClearSearch.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                String query = etSearch.getText().toString().trim();
+                if (!query.isEmpty()) {
+                    performSearch(query);
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
     private void performSearch(String query) {
         progressBar.setVisibility(View.VISIBLE);
-        tvNoResults.setVisibility(View.GONE);
+        llNoResults.setVisibility(View.GONE);
+        tvSearchTitle.setText("Results for \"" + query + "\"");
 
-        // Firestore search (case-sensitive and startsWith implementation)
-        // Note: For better search, consider using Algolia or ElasticSearch, but for basic search:
         db.collection("products")
                 .whereEqualTo("available", true)
                 .get()
@@ -104,7 +158,6 @@ public class SearchFragment extends Fragment implements ForYouProductAdapter.OnP
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
                         
-                        // Client-side filtering for case-insensitive search
                         if (product.getName().toLowerCase().contains(lowerQuery) || 
                             (product.getDescription() != null && product.getDescription().toLowerCase().contains(lowerQuery))) {
                             productList.add(product);
@@ -114,8 +167,11 @@ public class SearchFragment extends Fragment implements ForYouProductAdapter.OnP
                     progressBar.setVisibility(View.GONE);
                     adapter.notifyDataSetChanged();
                     
+                    updateResultsCount(productList.size());
+                    
                     if (productList.isEmpty()) {
-                        tvNoResults.setVisibility(View.VISIBLE);
+                        llNoResults.setVisibility(View.VISIBLE);
+                        tvNoResults.setText("Sorry, the keyword \"" + query + "\" could not be found.");
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -125,10 +181,12 @@ public class SearchFragment extends Fragment implements ForYouProductAdapter.OnP
                 });
     }
 
+    private void updateResultsCount(int count) {
+        tvResultsCount.setText(count + (count == 1 ? " result found" : " results found"));
+    }
+
     @Override
     public void onProductClick(Product product) {
-        // Navigate to SingleProductFragment
-        // Assuming singleProductFragment exists based on HomeFragment code
         try {
             Fragment singleProductFragment = (Fragment) Class.forName("lk.evolvex.rivinaka.verdant.fragment.singleProductFragment").newInstance();
             Bundle bundle = new Bundle();

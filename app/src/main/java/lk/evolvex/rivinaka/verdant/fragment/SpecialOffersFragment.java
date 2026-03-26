@@ -17,7 +17,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
@@ -30,6 +33,7 @@ public class SpecialOffersFragment extends Fragment implements SpecialOfferAdapt
     private SpecialOfferAdapter adapter;
     private List<Product> productList;
     private FirebaseFirestore db;
+    private Map<String, Integer> soldCountMap = new HashMap<>();
 
     @Nullable
     @Override
@@ -61,7 +65,33 @@ public class SpecialOffersFragment extends Fragment implements SpecialOfferAdapt
         rvSpecialOffers.setLayoutManager(new GridLayoutManager(getContext(), 2));
         rvSpecialOffers.setAdapter(adapter);
 
-        loadAllSpecialOffers();
+        loadSoldCountMapAndProducts();
+    }
+
+    private void loadSoldCountMapAndProducts() {
+        db.collection("orders")
+                .whereIn("status", Arrays.asList("Delivered", "DELIVERED", "Completed", "COMPLETED"))
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    soldCountMap.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        List<Map<String, Object>> items = (List<Map<String, Object>>) doc.get("items");
+                        if (items != null) {
+                            for (Map<String, Object> item : items) {
+                                String productId = (String) item.get("productId");
+                                Long quantity = (Long) item.get("quantity");
+                                if (productId != null && quantity != null) {
+                                    soldCountMap.put(productId, soldCountMap.getOrDefault(productId, 0) + quantity.intValue());
+                                }
+                            }
+                        }
+                    }
+                    loadAllSpecialOffers();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("SpecialOffersFragment", "Error loading sold counts", e);
+                    loadAllSpecialOffers();
+                });
     }
 
     private void loadAllSpecialOffers() {
@@ -73,6 +103,8 @@ public class SpecialOffersFragment extends Fragment implements SpecialOfferAdapt
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
+                        // Apply calculated sold count
+                        product.setSoldCount(soldCountMap.getOrDefault(product.getProductId(), 0));
                         productList.add(product);
                     }
                     adapter.notifyDataSetChanged();

@@ -1,6 +1,7 @@
 package lk.evolvex.rivinaka.verdant.fragment;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -23,18 +25,24 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.MainHome;
+import lk.evolvex.rivinaka.verdant.adapter.BannerAdapter;
 import lk.evolvex.rivinaka.verdant.adapter.ForYouProductAdapter;
 import lk.evolvex.rivinaka.verdant.adapter.PopularProductAdapter;
 import lk.evolvex.rivinaka.verdant.adapter.SpecialOfferAdapter;
+import lk.evolvex.rivinaka.verdant.model.Banner;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
 import lk.evolvex.rivinaka.verdant.model.Product;
 
 public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProductClickListener, PopularProductAdapter.OnProductClickListener, ForYouProductAdapter.OnProductClickListener {
 
+    private static final String TAG = "HomeFragment";
     private RecyclerView rvSpecialOffers, rvPopularProducts, rvForYou;
     private SpecialOfferAdapter specialOfferAdapter;
     private ForYouProductAdapter forYouAdapter;
@@ -44,6 +52,13 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
     private FirebaseAuth mAuth;
     private LinearLayout layoutCategories;
     private String selectedCategory = "All";
+
+    private ViewPager2 vpBanners;
+    private BannerAdapter bannerAdapter;
+    private List<Banner> bannerList;
+    private Handler sliderHandler = new Handler();
+    
+    private Map<String, Integer> soldCountMap = new HashMap<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -58,7 +73,6 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Ensure the top header and bottom navigation are visible
         if (getActivity() instanceof MainHome) {
             MainHome mainHome = (MainHome) getActivity();
             mainHome.setHeaderVisibility(View.VISIBLE);
@@ -79,34 +93,67 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
                     .commit();
         });
 
-        // Initialize Special Offers RecyclerView
+        vpBanners = view.findViewById(R.id.vpBanners);
+        bannerList = new ArrayList<>();
+        bannerAdapter = new BannerAdapter(bannerList);
+        vpBanners.setAdapter(bannerAdapter);
+
         rvSpecialOffers = view.findViewById(R.id.rvSpecialOffers);
         specialOfferList = new ArrayList<>();
         specialOfferAdapter = new SpecialOfferAdapter(specialOfferList, this);
         rvSpecialOffers.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         rvSpecialOffers.setAdapter(specialOfferAdapter);
 
-        // Initialize Popular Products RecyclerView
         rvPopularProducts = view.findViewById(R.id.rvPopularProducts);
         popularProductList = new ArrayList<>();
         popularProductAdapter = new PopularProductAdapter(popularProductList, this);
         rvPopularProducts.setLayoutManager(new LinearLayoutManager(getContext()));
         rvPopularProducts.setAdapter(popularProductAdapter);
 
-        // Initialize For You RecyclerView
         rvForYou = view.findViewById(R.id.rvForYou);
         forYouProductList = new ArrayList<>();
         forYouAdapter = new ForYouProductAdapter(forYouProductList, this);
-        // LayoutManager is set in XML as GridLayoutManager
         rvForYou.setAdapter(forYouAdapter);
 
-        // Initialize Category Filters
         layoutCategories = view.findViewById(R.id.layoutCategories);
         setupCategoryFilters();
 
-        loadSpecialOffers();
-        loadPopularProducts();
-        loadForYouProducts();
+        loadBanners();
+        refreshHomeData();
+    }
+
+    private void refreshHomeData() {
+        loadSoldCountMap(() -> {
+            loadSpecialOffers();
+            loadPopularProducts();
+            loadForYouProducts();
+        });
+    }
+
+    private void loadSoldCountMap(Runnable onComplete) {
+        db.collection("orders")
+                .whereIn("status", Arrays.asList("Delivered", "DELIVERED", "Completed", "COMPLETED"))
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    soldCountMap.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        List<Map<String, Object>> items = (List<Map<String, Object>>) doc.get("items");
+                        if (items != null) {
+                            for (Map<String, Object> item : items) {
+                                String productId = (String) item.get("productId");
+                                Long quantity = (Long) item.get("quantity");
+                                if (productId != null && quantity != null) {
+                                    soldCountMap.put(productId, soldCountMap.getOrDefault(productId, 0) + quantity.intValue());
+                                }
+                            }
+                        }
+                    }
+                    onComplete.run();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error loading sold counts", e);
+                    onComplete.run();
+                });
     }
 
     private void setupCategoryFilters() {
@@ -139,6 +186,62 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
         }
     }
 
+    private void loadBanners() {
+        Log.d(TAG, "Fetching banners from Firestore...");
+        db.collection("banners")
+                .orderBy("order", Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    bannerList.clear();
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Banner banner = document.toObject(Banner.class);
+                        if (banner.isActive()) {
+                            bannerList.add(banner);
+                        }
+                    }
+                    bannerAdapter.notifyDataSetChanged();
+                    if (!bannerList.isEmpty()) {
+                        // Start at a very high position in the middle to allow "infinite" sliding
+                        int middlePos = Integer.MAX_VALUE / 2;
+                        middlePos = middlePos - (middlePos % bannerList.size());
+                        vpBanners.setCurrentItem(middlePos, false);
+                        startAutoSlider();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Firestore error loading banners: ", e);
+                });
+    }
+
+    private Runnable sliderRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (vpBanners != null && bannerList != null && !bannerList.isEmpty()) {
+                vpBanners.setCurrentItem(vpBanners.getCurrentItem() + 1, true);
+                sliderHandler.postDelayed(this, 6000); // 6 seconds delay
+            }
+        }
+    };
+
+    private void startAutoSlider() {
+        sliderHandler.removeCallbacks(sliderRunnable);
+        sliderHandler.postDelayed(sliderRunnable, 6000); // 6 seconds delay
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        sliderHandler.removeCallbacks(sliderRunnable);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (bannerList != null && !bannerList.isEmpty()) {
+            startAutoSlider();
+        }
+    }
+
     private void loadSpecialOffers() {
         db.collection("products")
                 .whereEqualTo("available", true)
@@ -149,13 +252,14 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
+                        // Apply locally calculated sold count
+                        product.setSoldCount(soldCountMap.getOrDefault(product.getProductId(), 0));
                         specialOfferList.add(product);
                     }
                     specialOfferAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("HomeFragment", "Error loading special offers", e);
-                    Toast.makeText(getContext(), "Failed to load special offers", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error loading special offers", e);
                 });
     }
 
@@ -175,13 +279,14 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
+                        // Apply locally calculated sold count
+                        product.setSoldCount(soldCountMap.getOrDefault(product.getProductId(), 0));
                         popularProductList.add(product);
                     }
                     popularProductAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("HomeFragment", "Error loading popular products", e);
-                    Toast.makeText(getContext(), "Failed to load popular products", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error loading popular products", e);
                 });
     }
 
@@ -194,21 +299,20 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Product product = document.toObject(Product.class);
                         product.setProductId(document.getId());
+                        // Apply locally calculated sold count
+                        product.setSoldCount(soldCountMap.getOrDefault(product.getProductId(), 0));
                         forYouProductList.add(product);
                     }
                     forYouAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("HomeFragment", "Error loading For You products", e);
-                    Toast.makeText(getContext(), "Failed to load For You products", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error loading For You products", e);
                 });
     }
 
     @Override
     public void onProductClick(Product product) {
-        // Navigate to the SingleProductFragment and pass product data if needed
         Fragment singleProductFragment = new singleProductFragment();
-        // Bundle can be used to pass product details or ID
         Bundle bundle = new Bundle();
         bundle.putString("productId", product.getProductId());
         singleProductFragment.setArguments(bundle);
@@ -258,8 +362,7 @@ public class HomeFragment extends Fragment implements SpecialOfferAdapter.OnProd
                         .addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to add to cart", Toast.LENGTH_SHORT).show());
             }
         }).addOnFailureListener(e -> {
-            Log.e("HomeFragment", "Error checking cart", e);
-            Toast.makeText(getContext(), "Failed to access cart", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error checking cart", e);
         });
     }
 }

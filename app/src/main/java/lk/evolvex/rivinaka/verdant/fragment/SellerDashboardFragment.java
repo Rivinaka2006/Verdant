@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -37,6 +39,7 @@ import lk.evolvex.rivinaka.verdant.R;
 import lk.evolvex.rivinaka.verdant.activity.AddEditProductActivity;
 import lk.evolvex.rivinaka.verdant.activity.SellerMainHome;
 import lk.evolvex.rivinaka.verdant.model.CartItem;
+import lk.evolvex.rivinaka.verdant.model.Nursery;
 import lk.evolvex.rivinaka.verdant.model.Order;
 
 public class SellerDashboardFragment extends Fragment {
@@ -45,6 +48,7 @@ public class SellerDashboardFragment extends Fragment {
     private LineChart salesChart;
     private FirebaseFirestore db;
     private String sellerId;
+    private boolean isSellerVerified = false;
 
     @Nullable
     @Override
@@ -66,8 +70,23 @@ public class SellerDashboardFragment extends Fragment {
         setupClickListeners(view);
         
         if (sellerId != null) {
+            checkSellerVerification();
             loadDashboardData();
         }
+    }
+
+    private void checkSellerVerification() {
+        db.collection("nurseries")
+                .whereEqualTo("ownerId", sellerId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        Nursery nursery = queryDocumentSnapshots.getDocuments().get(0).toObject(Nursery.class);
+                        if (nursery != null) {
+                            isSellerVerified = nursery.isVerified();
+                        }
+                    }
+                });
     }
 
     private void initViews(View view) {
@@ -101,8 +120,12 @@ public class SellerDashboardFragment extends Fragment {
 
     private void setupClickListeners(View view) {
         view.findViewById(R.id.btnAddNewPlant).setOnClickListener(v -> {
-            Intent intent = new Intent(getContext(), AddEditProductActivity.class);
-            startActivity(intent);
+            if (isSellerVerified) {
+                Intent intent = new Intent(getContext(), AddEditProductActivity.class);
+                startActivity(intent);
+            } else {
+                Toast.makeText(getContext(), "Your nursery must be verified to add products.", Toast.LENGTH_LONG).show();
+            }
         });
 
         view.findViewById(R.id.btnUpdateStock).setOnClickListener(v -> {
@@ -296,5 +319,13 @@ public class SellerDashboardFragment extends Fragment {
         tvTodayOrders.setText("0");
         tvRevenueToday.setText("LKR 0.00");
         tvPendingDeliveries.setText("0");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sellerId != null) {
+            checkSellerVerification();
+        }
     }
 }

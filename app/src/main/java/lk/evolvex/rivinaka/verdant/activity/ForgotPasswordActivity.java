@@ -18,6 +18,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
     private ActivityForgotPasswordBinding binding;
     private FirebaseFirestore db;
+    private boolean isSeller = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +27,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
+        isSeller = getIntent().getBooleanExtra("isSeller", false);
 
         binding.ivBack.setOnClickListener(v -> finish());
 
@@ -49,16 +51,20 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         binding.tilEmail.setError(null);
 
-        // Check if user exists in Firestore
+        // Check if user exists in Firestore with correct role
+        String role = isSeller ? "seller" : "customer";
+        
         db.collection("users")
                 .whereEqualTo("email", email)
+                .whereEqualTo("role", role)
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && !task.getResult().isEmpty()) {
                         // User exists, send OTP
                         sendResetOtp(email);
                     } else {
-                        Toast.makeText(this, "No account found with this email", Toast.LENGTH_SHORT).show();
+                        String message = isSeller ? "No seller account found with this email" : "No customer account found with this email";
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -77,6 +83,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         intent.putExtra("email", email);
         intent.putExtra("otp", otp);
         intent.putExtra("isForgotPassword", true);
+        intent.putExtra("isSeller", isSeller);
         startActivity(intent);
     }
 }

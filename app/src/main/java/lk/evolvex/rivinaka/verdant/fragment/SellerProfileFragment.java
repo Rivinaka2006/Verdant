@@ -158,18 +158,44 @@ public class SellerProfileFragment extends Fragment {
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        String fileName = "profile_images/" + mAuth.getCurrentUser().getUid() + "_" + UUID.randomUUID().toString();
+        String userId = mAuth.getCurrentUser().getUid();
+        String fileName = "profile_images/" + userId + "_" + UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(fileName);
 
         ref.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String downloadUrl = uri.toString();
-                    db.collection("users").document(mAuth.getCurrentUser().getUid())
+                    
+                    // Update user profile image in "users" collection
+                    db.collection("users").document(userId)
                             .update("profileImageUrl", downloadUrl)
                             .addOnSuccessListener(aVoid -> {
-                                progressDialog.dismiss();
-                                Glide.with(this).load(downloadUrl).circleCrop().into(ivSellerProfile);
-                                Toast.makeText(getContext(), "Profile image updated", Toast.LENGTH_SHORT).show();
+                                // Also update nursery banner image in "nurseries" collection
+                                db.collection("nurseries").whereEqualTo("ownerId", userId).get()
+                                        .addOnSuccessListener(queryDocumentSnapshots -> {
+                                            if (!queryDocumentSnapshots.isEmpty()) {
+                                                String nurseryDocId = queryDocumentSnapshots.getDocuments().get(0).getId();
+                                                db.collection("nurseries").document(nurseryDocId)
+                                                        .update("bannerImageUrl", downloadUrl)
+                                                        .addOnSuccessListener(aVoid2 -> {
+                                                            progressDialog.dismiss();
+                                                            Glide.with(this).load(downloadUrl).circleCrop().into(ivSellerProfile);
+                                                            Toast.makeText(getContext(), "Profile and banner updated", Toast.LENGTH_SHORT).show();
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            progressDialog.dismiss();
+                                                            Toast.makeText(getContext(), "User updated but failed to update nursery banner", Toast.LENGTH_SHORT).show();
+                                                        });
+                                            } else {
+                                                progressDialog.dismiss();
+                                                Glide.with(this).load(downloadUrl).circleCrop().into(ivSellerProfile);
+                                                Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            progressDialog.dismiss();
+                                            Toast.makeText(getContext(), "Profile updated, failed to access nursery", Toast.LENGTH_SHORT).show();
+                                        });
                             })
                             .addOnFailureListener(e -> {
                                 progressDialog.dismiss();
