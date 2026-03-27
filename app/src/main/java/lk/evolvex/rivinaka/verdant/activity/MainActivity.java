@@ -76,12 +76,12 @@ public class MainActivity extends AppCompatActivity {
                                 navigateBasedOnRole(documentSnapshot.getString("role"));
                             }
                         } else {
-                            navigateToSignIn(null);
+                            navigateToWelcome();
                         }
                     })
-                    .addOnFailureListener(e -> navigateToSignIn(null));
+                    .addOnFailureListener(e -> navigateToWelcome());
         } else {
-            navigateToSignIn(null);
+            navigateToWelcome();
         }
     }
 
@@ -134,6 +134,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             startActivity(new Intent(MainActivity.this, MainHome.class));
         }
+        finish();
+    }
+
+    private void navigateToWelcome() {
+        startActivity(new Intent(MainActivity.this, Welcome.class));
         finish();
     }
 

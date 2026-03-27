@@ -35,7 +35,7 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
     private FirebaseAuth mAuth;
     private List<Product> productList;
     private SellerProductAdapter adapter;
-    private boolean isSellerVerified = false;
+    private boolean isBankVerified = false;
 
     @Nullable
     @Override
@@ -54,20 +54,20 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
         fabAddProduct = view.findViewById(R.id.fabAddProduct);
 
         fabAddProduct.setOnClickListener(v -> {
-            if (isSellerVerified) {
+            if (isBankVerified) {
                 Intent intent = new Intent(getContext(), AddEditProductActivity.class);
                 startActivity(intent);
             } else {
-                Toast.makeText(getContext(), "Your nursery must be verified to add products.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Your bank details must be verified to add products.", Toast.LENGTH_LONG).show();
             }
         });
 
         setupRecyclerView();
-        checkSellerVerification();
+        checkBankVerification();
         loadSellerProducts();
     }
 
-    private void checkSellerVerification() {
+    private void checkBankVerification() {
         if (mAuth.getCurrentUser() == null) return;
 
         db.collection("nurseries")
@@ -77,11 +77,7 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
                     if (!queryDocumentSnapshots.isEmpty()) {
                         Nursery nursery = queryDocumentSnapshots.getDocuments().get(0).toObject(Nursery.class);
                         if (nursery != null) {
-                            isSellerVerified = nursery.isVerified();
-                            if (!isSellerVerified) {
-                                // Optional: You could hide FAB or grey it out
-                                // fabAddProduct.setAlpha(0.5f);
-                            }
+                            isBankVerified = nursery.isBankVerified();
                         }
                     }
                 });
@@ -126,8 +122,8 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
 
     @Override
     public void onToggleAvailability(Product product, boolean isAvailable) {
-        if (!isSellerVerified && isAvailable) {
-            Toast.makeText(getContext(), "Only verified sellers can activate products.", Toast.LENGTH_SHORT).show();
+        if (!isBankVerified && isAvailable) {
+            Toast.makeText(getContext(), "Your bank details must be verified to activate products.", Toast.LENGTH_SHORT).show();
             adapter.notifyDataSetChanged(); // Reset switch
             return;
         }
@@ -147,7 +143,7 @@ public class SellerProductManagementFragment extends Fragment implements SellerP
     @Override
     public void onResume() {
         super.onResume();
-        checkSellerVerification();
+        checkBankVerification();
         loadSellerProducts(); // Refresh list when returning from Add/Edit
     }
 }
