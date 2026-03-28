@@ -41,7 +41,7 @@ import lk.evolvex.rivinaka.verdant.model.User;
 
 public class ProfileFragment extends Fragment {
 
-    private TextInputEditText etFullName, etEmail, etPhone, etAddress;
+    private TextInputEditText etFullName, etEmail, etPhone;
     private TextInputEditText etBillingFirstName, etBillingLastName, etBillingEmail, etBillingPhone, etBillingAddress, etBillingCity, etBillingPostalCode;
     private TextInputEditText etShippingFirstName, etShippingLastName, etShippingEmail, etShippingPhone, etShippingAddress, etShippingCity, etShippingPostalCode;
     private ImageView ivProfileImage, ivBillingArrow, ivShippingArrow;
@@ -115,7 +115,6 @@ public class ProfileFragment extends Fragment {
         etFullName = view.findViewById(R.id.etFullName);
         etEmail = view.findViewById(R.id.etEmail);
         etPhone = view.findViewById(R.id.etPhone);
-        etAddress = view.findViewById(R.id.etAddress);
 
         // Biometric Switch
         swBiometric = view.findViewById(R.id.swBiometric);
@@ -263,7 +262,6 @@ public class ProfileFragment extends Fragment {
                         etFullName.setText(documentSnapshot.getString("fullName"));
                         etEmail.setText(documentSnapshot.getString("email"));
                         etPhone.setText(documentSnapshot.getString("phone"));
-                        etAddress.setText(documentSnapshot.getString("address"));
 
                         // Profile Image
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
@@ -317,7 +315,6 @@ public class ProfileFragment extends Fragment {
 
         String fullName = etFullName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
-        String addressStr = etAddress.getText().toString().trim();
 
         if (fullName.isEmpty()) {
             etFullName.setError("Full name is required");
@@ -355,7 +352,6 @@ public class ProfileFragment extends Fragment {
         Map<String, Object> updates = new HashMap<>();
         updates.put("fullName", fullName);
         updates.put("phone", phone);
-        updates.put("address", addressStr);
         updates.put("billing", billing);
         updates.put("shipping", shipping);
         updates.put("sameAsBilling", cbSameAsBilling.isChecked());

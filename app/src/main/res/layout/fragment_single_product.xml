@@ -7,22 +7,6 @@
     android:background="@color/app_background"
     tools:context=".fragment.singleProductFragment">
 
-    <!-- Product Media Carousel (Fixed at top, scrolls behind) -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/media_container"
-        android:layout_width="0dp"
-        android:layout_height="420dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/viewPager_product_media"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
     <!-- SCROLLABLE CONTENT AREA -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nestedScrollView"
@@ -37,12 +21,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <!-- Placeholder to offset content below the fixed image -->
-            <View
-                android:id="@+id/view_scroll_spacing"
+            <!-- Product Media Carousel (Now inside scroll view to receive touch events) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/media_container"
                 android:layout_width="match_parent"
                 android:layout_height="420dp"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/viewPager_product_media"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- Product Details Card -->
             <com.google.android.material.card.MaterialCardView
@@ -53,7 +46,7 @@
                 app:cardBackgroundColor="@color/app_background"
                 app:cardCornerRadius="32dp"
                 app:cardElevation="0dp"
-                app:layout_constraintTop_toBottomOf="@id/view_scroll_spacing"
+                app:layout_constraintTop_toBottomOf="@id/media_container"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Verdant.TopRounded">
 
                 <LinearLayout
