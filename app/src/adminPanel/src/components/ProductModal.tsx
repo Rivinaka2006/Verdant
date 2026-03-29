@@ -217,8 +217,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, product })
                   <input
                     required
                     type="number"
+                    min="0"
                     value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, price: Math.max(0, Number(e.target.value)) })}
                     className="w-full px-5 py-4 rounded-2xl bg-dark-800/50 border border-white/5 text-verdant-300 text-lg font-bold focus:outline-none focus:border-verdant-500/50 transition-all"
                   />
                 </div>
@@ -226,8 +227,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, product })
                   <label className="text-[10px] font-bold text-dark-300 uppercase tracking-widest px-1">Old Price</label>
                   <input
                     type="number"
+                    min="0"
                     value={formData.oldPrice}
-                    onChange={(e) => setFormData({ ...formData, oldPrice: Number(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, oldPrice: Math.max(0, Number(e.target.value)) })}
                     className="w-full px-5 py-4 rounded-2xl bg-dark-800/50 border border-white/5 text-dark-400 text-sm focus:outline-none focus:border-white/20 transition-all font-medium"
                   />
                 </div>
@@ -236,8 +238,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, product })
                   <input
                     required
                     type="number"
+                    min="0"
                     value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, stock: Math.max(0, Number(e.target.value)) })}
                     className={`w-full px-5 py-4 rounded-2xl bg-dark-800/50 border border-white/5 text-sm font-bold focus:outline-none transition-all ${formData.stock === 0 ? 'text-rose-500' : 'text-white'}`}
                   />
                 </div>

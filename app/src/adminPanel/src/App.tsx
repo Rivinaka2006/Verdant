@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { DollarSign } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import StatsCards from './components/StatsCards';
 import InventoryTable from './components/InventoryTable';
-import LogisticsTracker from './components/LogisticsTracker';
 import OrderBoard from './components/OrderBoard';
 import AnalyticsWidgets from './components/AnalyticsWidgets';
 import MediaManagement from './components/MediaManagement';
 import UserManagement from './components/UserManagement';
+import SellerVerification from './components/SellerVerification';
+import NurseryMap from './components/NurseryMap';
 import Login from './components/Login';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useDashboardData } from './hooks/useDashboardData';
-import { seedDashboardData } from './lib/seed';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -28,11 +28,6 @@ const App: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setIsLoggedIn(true);
-        // Seed the database on first login
-        seedDashboardData().catch(err => {
-          // Silently fail if data already exists or on seed error
-          console.log("Database initialization:", err.message);
-        });
       } else {
         // Auth state was lost or logged out
         setIsLoggedIn(false);
@@ -101,7 +96,7 @@ const App: React.FC = () => {
           {dashboardError && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3 text-red-400 mb-2">
               <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
-                <DollarSign className="w-4 h-4" /> {/* Swap with appropriate icon if needed */}
+                <AlertCircle className="w-4 h-4" />
               </div>
               <p className="text-sm font-medium">{dashboardError}</p>
             </div>
@@ -125,22 +120,12 @@ const App: React.FC = () => {
 
               {activeTab === 'orders' && <OrderBoard />}
 
-              {activeTab === 'nurseries' && <LogisticsTracker />}
+              {activeTab === 'nurseries' && <NurseryMap />}
 
               {activeTab === 'users' && <UserManagement />}
+              {activeTab === 'verification' && <SellerVerification />}
 
-              {activeTab === 'financials' && (
-                <div className="space-y-5">
-                  <StatsCards metrics={metrics} />
-                  <div className="glass-card rounded-2xl p-8 flex flex-col items-center justify-center text-center animate-fade-in border border-white/5">
-                    <div className="w-16 h-16 rounded-2xl bg-verdant-700/20 flex items-center justify-center mb-4 border border-verdant-700/30">
-                      <DollarSign className="w-8 h-8 text-verdant-300" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 font-display">Detailed Financial Reports</h3>
-                    <p className="text-dark-200 max-w-md text-sm">Comprehensive financial analytics and revenue breakdown modules are being prepared for your account.</p>
-                  </div>
-                </div>
-              )}
+
 
               {activeTab === 'settings' && <MediaManagement />}
             </>

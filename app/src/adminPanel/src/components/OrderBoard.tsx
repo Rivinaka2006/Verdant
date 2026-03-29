@@ -268,7 +268,7 @@ const OrderBoard: React.FC = () => {
                       MARK AS {getNextStatus(selectedOrder.status)}
                     </button>
                   )}
-                  {selectedOrder.status !== 'CANCELLED' && selectedOrder.status !== 'COMPLETED' && (
+                  {selectedOrder.status !== 'CANCELLED' && selectedOrder.status !== 'COMPLETED' && selectedOrder.status !== 'DELIVERED' && selectedOrder.status !== 'completed' && selectedOrder.status !== 'delivered' && (
                     <button 
                       disabled={updating}
                       onClick={() => handleStatusUpdate(selectedOrder.orderId, 'CANCELLED')}

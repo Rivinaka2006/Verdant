@@ -5,7 +5,7 @@ import {
   ClipboardList,
   MapPin,
   Users,
-  DollarSign,
+  Shield,
   Settings,
   Leaf,
   ChevronLeft,
@@ -31,7 +31,7 @@ export const navItems = [
   { id: 'orders', label: 'Order Management', icon: ClipboardList },
   { id: 'nurseries', label: 'Nursery Locations', icon: MapPin },
   { id: 'users', label: 'User Management', icon: Users },
-  { id: 'financials', label: 'Financials', icon: DollarSign },
+  { id: 'verification', label: 'Seller Verification', icon: Shield },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 

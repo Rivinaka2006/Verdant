@@ -263,6 +263,11 @@ const SellerRow: React.FC<{
             <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
               {isActive ? 'Active Seller' : 'Deactivated'}
             </span>
+            {seller.nursery && (
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mt-1.5 border ${seller.nursery.bankVerified ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                {seller.nursery.bankVerified ? 'Verified' : 'Pending Verification'}
+              </span>
+            )}
             <span className="text-[10px] text-dark-400 mt-1.5 font-medium">
               Since {seller.createdAt instanceof Timestamp ? seller.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}
             </span>

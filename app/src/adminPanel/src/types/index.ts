@@ -83,6 +83,11 @@ export interface Nursery {
   businessHours: Record<string, string>;
   ratingAverage: number;
   totalReviews: number;
+  bankAccountName: string;
+  bankAccountNumber: string;
+  bankNameBranch: string;
+  bankProofUrl: string;
+  bankVerified: boolean;
   time: Timestamp;
   createdAt: Timestamp;
 }

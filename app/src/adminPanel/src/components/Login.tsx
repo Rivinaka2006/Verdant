@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Leaf, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 import { db, auth } from '../lib/firebase';
-import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 interface LoginProps {
@@ -15,57 +15,42 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Seed dummy user if it doesn't exist
-    useEffect(() => {
-        const seedUser = async () => {
-            try {
-                const userEmail = "admin@verdant.com";
-                
-                // Check Firestore
-                const userSnap = await getDoc(doc(db, "users", "dummy-admin"));
-                if (!userSnap.exists()) {
-                    await setDoc(doc(db, "users", "dummy-admin"), {
-                        email: userEmail,
-                        fullName: "Verdant Administrator",
-                        role: "super_admin",
-                        status: "active",
-                        createdAt: new Date().toISOString()
-                    });
-                    console.log("Seeded dummy user in Firestore");
-                }
-            } catch (err) {
-                console.warn("Seeding failed (might be permissions):", err);
-            }
-        };
-        seedUser();
-    }, []);
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
 
         try {
-            // First, try Firebase Auth
+            // First, find the user in Firestore to check their role
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                setError("Unauthorized access. This account does not exist in our systems.");
+                setIsLoading(false);
+                return;
+            }
+
+            const userData = querySnapshot.docs[0].data();
+
+            // Validate Role - Only allow admin or super_admin to access the panel
+            if (userData.role !== 'admin' && userData.role !== 'super_admin') {
+                setError("Warning: Access restricted to administrators only. Your account does not have the required permissions.");
+                setIsLoading(false);
+                return;
+            }
+
+            // Proceed with Authentication
             try {
                 await signInWithEmailAndPassword(auth, email, password);
                 onLogin();
             } catch (authErr: any) {
-                // If Auth fails (e.g. user doesn't exist in Auth but we want them to login via the Firestore dummy doc)
-                // We check the 'users' collection as requested by the user for the dummy account.
-                const usersRef = collection(db, "users");
-                const q = query(usersRef, where("email", "==", email));
-                const querySnapshot = await getDocs(q);
-                
-                if (!querySnapshot.empty) {
-                    // In this dummy testing scenario, we check password plain-text for the specific dummy account
-                    if (password === "password123" && email === "admin@verdant.com") {
-                        onLogin();
-                    } else {
-                        setError("Invalid credentials. Please verify your identity.");
-                    }
+                // Fallback for dummy account password check if Auth fails (for development)
+                if (password === "password123" && email === "admin@verdant.com") {
+                    onLogin();
                 } else {
-                    setError("Unauthorized access. This account does not exist in our systems.");
+                    setError("Invalid credentials. Please verify your security code and identification.");
                 }
             }
         } catch (err: any) {
@@ -195,9 +180,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                             )}
                         </button>
                         
-                        <div className="pt-2 text-center text-[10px] text-dark-500 font-medium">
+                        {/* <div className="pt-2 text-center text-[10px] text-dark-500 font-medium">
                             DUMMY CREDENTIALS: <span className="text-dark-300">admin@verdant.com</span> / <span className="text-dark-300">password123</span>
-                        </div>
+                        </div> */}
                     </form>
                 </div>
 
