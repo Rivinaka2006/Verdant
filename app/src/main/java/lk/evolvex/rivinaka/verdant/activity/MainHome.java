@@ -23,6 +23,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -143,6 +144,17 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
 
         updateGreeting();
         fetchUserData();
+
+        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof HomeFragment) {
+                setHeaderVisibility(View.VISIBLE);
+                setBottomNavVisibility(View.VISIBLE);
+            } else if (currentFragment instanceof CartFragment || currentFragment instanceof OrdersFragment || currentFragment instanceof ProfileFragment) {
+                setHeaderVisibility(View.GONE);
+                setBottomNavVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private void openSearchSuggestion() {
@@ -251,11 +263,6 @@ public class MainHome extends AppCompatActivity implements BottomNavigationView.
             drawerLayout.closeDrawer(GravityCompat.START);
         } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
-            // Restore visibility when popping back to HomeFragment
-            if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
-                setHeaderVisibility(View.VISIBLE);
-                setBottomNavVisibility(View.VISIBLE);
-            }
         } else {
             super.onBackPressed();
         }
