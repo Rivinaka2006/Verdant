@@ -6,5 +6,5 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="powered_by">Powered by Evolvex</string>
     <string name="version_format">Version %1$s</string>
-    <string name="google_maps_key" translatable="false">AIzaSyBR4CDNWqrii3CzTZb3p08K-t9au4KtErY</string>
+    <string name="google_maps_key" translatable="false">api_key</string>
 </resources>
